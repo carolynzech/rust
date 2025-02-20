@@ -65,11 +65,8 @@ jobs:
       run: |
         cd rust-tmp
         git fetch --all
-        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-        echo "GIT_LOG<<$EOF" >> $GITHUB_ENV
         git log --oneline ${{ env.CURRENT_COMMIT_HASH }}..${{ env.NEXT_COMMIT_HASH }} | \
-          sed 's#^#https://github.com/rust-lang/rust/commit/#' >> $GITHUB_ENV
-        echo "$EOF" >> $GITHUB_ENV
+          sed 's#^#https://github.com/rust-lang/rust/commit/#' > ../commit_log.txt
 
     - name: Update subtree/library locally
       run: |
@@ -106,9 +103,8 @@ jobs:
           This is an automated PR to update the subtree/library branch to the changes
           from ${{ env.CURRENT_TOOLCHAIN_DATE }} (${{ env.CURRENT_COMMIT_HASH }})
           to ${{ env.NEXT_TOOLCHAIN_DATE }} (${{ env.NEXT_COMMIT_HASH }}).
-
           Commit log:
-          ${{ env.GIT_LOG }}
+          $(cat ../commit_log.txt)
         branch: update-subtree/library
         delete-branch: true
         base: subtree/library
@@ -141,9 +137,8 @@ jobs:
           from ${{ env.CURRENT_TOOLCHAIN_DATE }} (${{ env.CURRENT_COMMIT_HASH }})
           to ${{ env.NEXT_TOOLCHAIN_DATE }} (${{ env.NEXT_COMMIT_HASH }})
           into main. This is a clean merge, no conflicts were detected.
-
           Commit log:
-          ${{ env.GIT_LOG }}
+          $(cat ../commit_log.txt)
         branch: sync-${{ env.NEXT_TOOLCHAIN_DATE }}
         delete-branch: true
         base: main
@@ -160,9 +155,8 @@ jobs:
           to ${{ env.NEXT_TOOLCHAIN_DATE }} (${{ env.NEXT_COMMIT_HASH }})
           into main. `git merge` resulted in conflicts, which require manual resolution.
           Files were commited with merge conflict markers.
-
           Commit log:
-          ${{ env.GIT_LOG }}
+          $(cat ../commit_log.txt)
         branch: sync-${{ env.NEXT_TOOLCHAIN_DATE }}
         delete-branch: true
         base: main
