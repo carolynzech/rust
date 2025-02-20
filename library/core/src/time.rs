@@ -23,12 +23,9 @@ use safety::{Invariant, ensures};
 
 use crate::fmt;
 use crate::iter::Sum;
-<<<<<<< HEAD
 #[cfg(kani)]
 use crate::kani;
-=======
 use crate::num::niche_types::Nanoseconds;
->>>>>>> 6a0734179ff38467ed3169324d8f7ab4b07796ef
 use crate::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 use crate::ub_checks::Invariant;
 
@@ -46,33 +43,13 @@ const HOURS_PER_DAY: u64 = 24;
 #[unstable(feature = "duration_units", issue = "120301")]
 const DAYS_PER_WEEK: u64 = 7;
 
-<<<<<<< HEAD
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[repr(transparent)]
-#[rustc_layout_scalar_valid_range_start(0)]
-#[rustc_layout_scalar_valid_range_end(999_999_999)]
-struct Nanoseconds(u32);
-
+#[unstable(feature = "ub_checks", issue = "none")]
 impl Invariant for Nanoseconds {
     fn is_safe(&self) -> bool {
-        self.0 < NANOS_PER_SEC
+        self.as_inner() < NANOS_PER_SEC
     }
 }
 
-impl Nanoseconds {
-    // SAFETY: 0 is within the valid range
-    const ZERO: Self = unsafe { Nanoseconds(0) };
-}
-
-impl Default for Nanoseconds {
-    #[inline]
-    fn default() -> Self {
-        Self::ZERO
-    }
-}
-
-=======
->>>>>>> 6a0734179ff38467ed3169324d8f7ab4b07796ef
 /// A `Duration` type to represent a span of time, typically used for system
 /// timeouts.
 ///
@@ -534,7 +511,7 @@ impl Duration {
     #[rustc_const_stable(feature = "duration_consts", since = "1.32.0")]
     #[must_use]
     #[inline]
-    #[ensures(|ms| *ms == self.nanos.0 / NANOS_PER_MILLI)]
+    #[ensures(|ms| *ms == self.nanos.as_inner() / NANOS_PER_MILLI)]
     pub const fn subsec_millis(&self) -> u32 {
         self.nanos.as_inner() / NANOS_PER_MILLI
     }
@@ -558,7 +535,7 @@ impl Duration {
     #[rustc_const_stable(feature = "duration_consts", since = "1.32.0")]
     #[must_use]
     #[inline]
-    #[ensures(|ms| *ms == self.nanos.0 / NANOS_PER_MICRO)]
+    #[ensures(|ms| *ms == self.nanos.as_inner() / NANOS_PER_MICRO)]
     pub const fn subsec_micros(&self) -> u32 {
         self.nanos.as_inner() / NANOS_PER_MICRO
     }
@@ -582,7 +559,7 @@ impl Duration {
     #[rustc_const_stable(feature = "duration_consts", since = "1.32.0")]
     #[must_use]
     #[inline]
-    #[ensures(|nanos| *nanos == self.nanos.0)]
+    #[ensures(|nanos| *nanos == self.nanos.as_inner())]
     pub const fn subsec_nanos(&self) -> u32 {
         self.nanos.as_inner()
     }
@@ -601,7 +578,7 @@ impl Duration {
     #[rustc_const_stable(feature = "duration_as_u128", since = "1.33.0")]
     #[must_use]
     #[inline]
-    #[ensures(|ms| *ms == self.secs as u128 * MILLIS_PER_SEC as u128 + (self.nanos.0 / NANOS_PER_MILLI) as u128)]
+    #[ensures(|ms| *ms == self.secs as u128 * MILLIS_PER_SEC as u128 + (self.nanos.as_inner() / NANOS_PER_MILLI) as u128)]
     pub const fn as_millis(&self) -> u128 {
         self.secs as u128 * MILLIS_PER_SEC as u128
             + (self.nanos.as_inner() / NANOS_PER_MILLI) as u128
@@ -621,7 +598,7 @@ impl Duration {
     #[rustc_const_stable(feature = "duration_as_u128", since = "1.33.0")]
     #[must_use]
     #[inline]
-    #[ensures(|ms| *ms == self.secs as u128 * MICROS_PER_SEC as u128 + (self.nanos.0 / NANOS_PER_MICRO) as u128)]
+    #[ensures(|ms| *ms == self.secs as u128 * MICROS_PER_SEC as u128 + (self.nanos.as_inner() / NANOS_PER_MICRO) as u128)]
     pub const fn as_micros(&self) -> u128 {
         self.secs as u128 * MICROS_PER_SEC as u128
             + (self.nanos.as_inner() / NANOS_PER_MICRO) as u128

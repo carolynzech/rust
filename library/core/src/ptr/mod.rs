@@ -395,12 +395,9 @@
 #![allow(clippy::not_unsafe_ptr_arg_deref)]
 
 use crate::cmp::Ordering;
-<<<<<<< HEAD
+use crate::intrinsics::const_eval_select;
 #[cfg(kani)]
 use crate::kani;
-=======
-use crate::intrinsics::const_eval_select;
->>>>>>> 6a0734179ff38467ed3169324d8f7ab4b07796ef
 use crate::marker::FnPtr;
 use crate::mem::{self, MaybeUninit, SizedTypeProperties};
 use crate::{fmt, hash, intrinsics, ub_checks};
