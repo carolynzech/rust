@@ -81,8 +81,7 @@ jobs:
           echo "MERGE_CONFLICTS=maybe" >> $GITHUB_ENV
         fi
         # Get the commit log
-        COMMIT_LOG=$(git log ${UPSTREAM_FROM}..${UPSTREAM_HEAD} --oneline)
-        echo "COMMIT_LOG=${COMMIT_LOG}" >> $GITHUB_ENV
+        git log ${UPSTREAM_FROM}..${UPSTREAM_HEAD} --oneline
         echo "UPSTREAM_FROM=${UPSTREAM_FROM}" >> $GITHUB_ENV
         echo "UPSTREAM_HEAD=${UPSTREAM_HEAD}" >> $GITHUB_ENV
 
@@ -96,7 +95,7 @@ jobs:
           from ${{ env.UPSTREAM_FROM }} to ${{ env.UPSTREAM_HEAD }} of ${{ env.TOOLCHAIN_DATE }}.
 
           Commit range:
-          ${{ env.COMMIT_LOG }}
+           ${{ env.git_log }}
         branch: update-subtree/library
         delete-branch: true
         base: subtree/library
@@ -131,7 +130,7 @@ jobs:
           into main. This is a clean merge, no conflicts were detected.
 
           Commit range:
-          ${{ env.COMMIT_LOG }}
+           ${{ env.git_log }}
         branch: sync-${{ env.TOOLCHAIN_DATE }}
         delete-branch: true
         base: main
@@ -149,7 +148,7 @@ jobs:
           Files were committed with merge conflict markers.
 
           Commit range:
-          ${{ env.COMMIT_LOG }}
+            ${{ env.git_log }}
         branch: sync-${{ env.TOOLCHAIN_DATE }}
         delete-branch: true
         base: main
