@@ -82,9 +82,9 @@ jobs:
         fi
         # Get the commit log
         COMMIT_LOG=$(git log ${UPSTREAM_FROM}..${UPSTREAM_HEAD} --oneline)
-        echo "COMMIT_LOG<<EOF" >> $GITHUB_ENV
-        echo "$COMMIT_LOG" >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
+        echo "COMMIT_LOG=${COMMIT_LOG}" >> $GITHUB_ENV
+        echo "UPSTREAM_FROM=${UPSTREAM_FROM}" >> $GITHUB_ENV
+        echo "UPSTREAM_HEAD=${UPSTREAM_HEAD}" >> $GITHUB_ENV
 
     - name: Create Pull Request
       if: ${{ env.MERGE_CONFLICTS != 'noop' }}
@@ -96,9 +96,7 @@ jobs:
           from ${{ env.UPSTREAM_FROM }} to ${{ env.UPSTREAM_HEAD }} of ${{ env.TOOLCHAIN_DATE }}.
 
           Commit range:
-          ```
           ${{ env.COMMIT_LOG }}
-          ```
         branch: update-subtree/library
         delete-branch: true
         base: subtree/library
@@ -133,9 +131,7 @@ jobs:
           into main. This is a clean merge, no conflicts were detected.
 
           Commit range:
-          ```
           ${{ env.COMMIT_LOG }}
-          ```
         branch: sync-${{ env.TOOLCHAIN_DATE }}
         delete-branch: true
         base: main
@@ -153,9 +149,7 @@ jobs:
           Files were committed with merge conflict markers.
 
           Commit range:
-          ```
           ${{ env.COMMIT_LOG }}
-          ```
         branch: sync-${{ env.TOOLCHAIN_DATE }}
         delete-branch: true
         base: main
