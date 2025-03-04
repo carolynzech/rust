@@ -42,8 +42,8 @@ jobs:
 
     - name: Fetch toolchain versions
       run: |
-        CURRENT_TOOLCHAIN_DATE=$(grep -oP 'channel = "nightly-\K\d{4}-\d{2}-\d{2}' verify-rust-std/rust-toolchain.toml)
-        NEXT_TOOLCHAIN_DATE=$(grep -oP 'channel = "nightly-\K\d{4}-\d{2}-\d{2}' kani-tmp/rust-toolchain.toml)
+        CURRENT_TOOLCHAIN_DATE="nightly-2025-02-10"
+        NEXT_TOOLCHAIN_DATE="nightly-2025-02-11"
         CURRENT_COMMIT_HASH=$(curl https://static.rust-lang.org/dist/$CURRENT_TOOLCHAIN_DATE/channel-rust-nightly-git-commit-hash.txt)
         NEXT_COMMIT_HASH=$(curl https://static.rust-lang.org/dist/$NEXT_TOOLCHAIN_DATE/channel-rust-nightly-git-commit-hash.txt)
         if [ -z "$CURRENT_COMMIT_HASH" ]; then
@@ -58,7 +58,7 @@ jobs:
         echo "NEXT_TOOLCHAIN_DATE=${NEXT_TOOLCHAIN_DATE}" >> $GITHUB_ENV
         echo "CURRENT_COMMIT_HASH=${CURRENT_COMMIT_HASH}" >> $GITHUB_ENV
         echo "NEXT_COMMIT_HASH=${NEXT_COMMIT_HASH}" >> $GITHUB_ENV
-        KANI_COMMIT_HASH=$(git -C kani-tmp rev-parse HEAD)
+        KANI_COMMIT_HASH="2e95d8bc47a04f01badcb3d30875269be29a46aa"
         echo "KANI_COMMIT_HASH=${KANI_COMMIT_HASH}" >> $GITHUB_ENV
 
     - name: Check for existing pull requests
