@@ -10,6 +10,7 @@ unsafe impl Sync for Mutex {} // no threads on this platform
 
 impl Mutex {
     #[inline]
+    #[cfg_attr(bootstrap, rustc_const_stable(feature = "const_locks", since = "1.63.0"))]
     pub const fn new() -> Mutex {
         Mutex { locked: Cell::new(false) }
     }

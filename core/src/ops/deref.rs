@@ -133,8 +133,7 @@
 #[doc(alias = "&*")]
 #[stable(feature = "rust1", since = "1.0.0")]
 #[rustc_diagnostic_item = "Deref"]
-#[const_trait]
-#[rustc_const_unstable(feature = "const_deref", issue = "88955")]
+#[cfg_attr(not(bootstrap), const_trait)]
 pub trait Deref {
     /// The resulting type after dereferencing.
     #[stable(feature = "rust1", since = "1.0.0")]
@@ -149,6 +148,18 @@ pub trait Deref {
     fn deref(&self) -> &Self::Target;
 }
 
+#[cfg(bootstrap)]
+#[stable(feature = "rust1", since = "1.0.0")]
+impl<T: ?Sized> Deref for &T {
+    type Target = T;
+
+    #[rustc_diagnostic_item = "noop_method_deref"]
+    fn deref(&self) -> &T {
+        *self
+    }
+}
+
+#[cfg(not(bootstrap))]
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized> const Deref for &T {
     type Target = T;
@@ -162,6 +173,17 @@ impl<T: ?Sized> const Deref for &T {
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized> !DerefMut for &T {}
 
+#[cfg(bootstrap)]
+#[stable(feature = "rust1", since = "1.0.0")]
+impl<T: ?Sized> Deref for &mut T {
+    type Target = T;
+
+    fn deref(&self) -> &T {
+        *self
+    }
+}
+
+#[cfg(not(bootstrap))]
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized> const Deref for &mut T {
     type Target = T;
@@ -260,11 +282,11 @@ impl<T: ?Sized> const Deref for &mut T {
 /// *x = 'b';
 /// assert_eq!('b', x.value);
 /// ```
+#[cfg(not(bootstrap))]
 #[lang = "deref_mut"]
 #[doc(alias = "*")]
 #[stable(feature = "rust1", since = "1.0.0")]
 #[const_trait]
-#[rustc_const_unstable(feature = "const_deref", issue = "88955")]
 pub trait DerefMut: ~const Deref {
     /// Mutably dereferences the value.
     #[stable(feature = "rust1", since = "1.0.0")]
@@ -272,6 +294,27 @@ pub trait DerefMut: ~const Deref {
     fn deref_mut(&mut self) -> &mut Self::Target;
 }
 
+/// Bootstrap
+#[lang = "deref_mut"]
+#[doc(alias = "*")]
+#[stable(feature = "rust1", since = "1.0.0")]
+#[cfg(bootstrap)]
+pub trait DerefMut: Deref {
+    /// Mutably dereferences the value.
+    #[stable(feature = "rust1", since = "1.0.0")]
+    #[rustc_diagnostic_item = "deref_mut_method"]
+    fn deref_mut(&mut self) -> &mut Self::Target;
+}
+
+#[cfg(bootstrap)]
+#[stable(feature = "rust1", since = "1.0.0")]
+impl<T: ?Sized> DerefMut for &mut T {
+    fn deref_mut(&mut self) -> &mut T {
+        *self
+    }
+}
+
+#[cfg(not(bootstrap))]
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized> const DerefMut for &mut T {
     fn deref_mut(&mut self) -> &mut T {
@@ -362,15 +405,18 @@ unsafe impl<T: ?Sized> DerefPure for &mut T {}
 /// }
 /// ```
 #[lang = "receiver"]
+#[cfg(not(bootstrap))]
 #[unstable(feature = "arbitrary_self_types", issue = "44874")]
 pub trait Receiver {
     /// The target type on which the method may be called.
+    #[cfg(not(bootstrap))]
     #[rustc_diagnostic_item = "receiver_target"]
     #[lang = "receiver_target"]
     #[unstable(feature = "arbitrary_self_types", issue = "44874")]
     type Target: ?Sized;
 }
 
+#[cfg(not(bootstrap))]
 #[unstable(feature = "arbitrary_self_types", issue = "44874")]
 impl<P: ?Sized, T: ?Sized> Receiver for P
 where
@@ -387,7 +433,8 @@ where
 /// facility based around the current "arbitrary self types" unstable feature.
 /// That new facility will use the replacement trait above called `Receiver`
 /// which is why this is now named `LegacyReceiver`.
-#[lang = "legacy_receiver"]
+#[cfg_attr(bootstrap, lang = "receiver")]
+#[cfg_attr(not(bootstrap), lang = "legacy_receiver")]
 #[unstable(feature = "legacy_receiver_trait", issue = "none")]
 #[doc(hidden)]
 pub trait LegacyReceiver {

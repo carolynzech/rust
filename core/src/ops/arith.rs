@@ -65,7 +65,6 @@
 /// ```
 #[lang = "add"]
 #[stable(feature = "rust1", since = "1.0.0")]
-#[rustc_const_unstable(feature = "const_ops", issue = "90080")]
 #[rustc_on_unimplemented(
     on(all(_Self = "{integer}", Rhs = "{float}"), message = "cannot add a float to an integer",),
     on(all(_Self = "{float}", Rhs = "{integer}"), message = "cannot add an integer to a float",),
@@ -74,7 +73,7 @@
     append_const_msg
 )]
 #[doc(alias = "+")]
-#[const_trait]
+#[cfg_attr(not(bootstrap), const_trait)]
 pub trait Add<Rhs = Self> {
     /// The resulting type after applying the `+` operator.
     #[stable(feature = "rust1", since = "1.0.0")]
@@ -96,6 +95,18 @@ pub trait Add<Rhs = Self> {
 macro_rules! add_impl {
     ($($t:ty)*) => ($(
         #[stable(feature = "rust1", since = "1.0.0")]
+        #[cfg(bootstrap)]
+        impl Add for $t {
+            type Output = $t;
+
+            #[inline]
+            #[track_caller]
+            #[rustc_inherit_overflow_checks]
+            fn add(self, other: $t) -> $t { self + other }
+        }
+
+        #[stable(feature = "rust1", since = "1.0.0")]
+        #[cfg(not(bootstrap))]
         impl const Add for $t {
             type Output = $t;
 

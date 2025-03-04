@@ -67,7 +67,7 @@ macro_rules! rpc_encode_decode {
                 mod tag {
                     #[repr(u8)] enum Tag { $($variant),* }
 
-                    $(pub(crate) const $variant: u8 = Tag::$variant as u8;)*
+                    $(pub const $variant: u8 = Tag::$variant as u8;)*
                 }
 
                 match self {
@@ -89,7 +89,7 @@ macro_rules! rpc_encode_decode {
                 mod tag {
                     #[repr(u8)] enum Tag { $($variant),* }
 
-                    $(pub(crate) const $variant: u8 = Tag::$variant as u8;)*
+                    $(pub const $variant: u8 = Tag::$variant as u8;)*
                 }
 
                 match u8::decode(r, s) {

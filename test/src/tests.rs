@@ -78,7 +78,7 @@ fn one_ignored_one_unignored_test() -> Vec<TestDescAndFn> {
 }
 
 #[test]
-fn do_not_run_ignored_tests() {
+pub fn do_not_run_ignored_tests() {
     fn f() -> Result<(), String> {
         panic!();
     }
@@ -106,7 +106,7 @@ fn do_not_run_ignored_tests() {
 }
 
 #[test]
-fn ignored_tests_result_in_ignored() {
+pub fn ignored_tests_result_in_ignored() {
     fn f() -> Result<(), String> {
         Ok(())
     }
@@ -133,7 +133,9 @@ fn ignored_tests_result_in_ignored() {
     assert_eq!(result, TrIgnored);
 }
 
+// FIXME: Re-enable emscripten once it can catch panics again (introduced by #65251)
 #[test]
+#[cfg(not(target_os = "emscripten"))]
 #[cfg_attr(not(panic = "unwind"), ignore = "test requires unwinding support")]
 fn test_should_panic() {
     fn f() -> Result<(), String> {
@@ -162,7 +164,9 @@ fn test_should_panic() {
     assert_eq!(result, TrOk);
 }
 
+// FIXME: Re-enable emscripten once it can catch panics again (introduced by #65251)
 #[test]
+#[cfg(not(target_os = "emscripten"))]
 #[cfg_attr(not(panic = "unwind"), ignore = "test requires unwinding support")]
 fn test_should_panic_good_message() {
     fn f() -> Result<(), String> {
@@ -191,7 +195,9 @@ fn test_should_panic_good_message() {
     assert_eq!(result, TrOk);
 }
 
+// FIXME: Re-enable emscripten once it can catch panics again (introduced by #65251)
 #[test]
+#[cfg(not(target_os = "emscripten"))]
 #[cfg_attr(not(panic = "unwind"), ignore = "test requires unwinding support")]
 fn test_should_panic_bad_message() {
     use crate::tests::TrFailedMsg;
@@ -225,7 +231,9 @@ fn test_should_panic_bad_message() {
     assert_eq!(result, TrFailedMsg(failed_msg.to_string()));
 }
 
+// FIXME: Re-enable emscripten once it can catch panics again (introduced by #65251)
 #[test]
+#[cfg(not(target_os = "emscripten"))]
 #[cfg_attr(not(panic = "unwind"), ignore = "test requires unwinding support")]
 fn test_should_panic_non_string_message_type() {
     use std::any::TypeId;
@@ -264,7 +272,9 @@ fn test_should_panic_non_string_message_type() {
     assert_eq!(result, TrFailedMsg(failed_msg));
 }
 
+// FIXME: Re-enable emscripten once it can catch panics again (introduced by #65251)
 #[test]
+#[cfg(not(target_os = "emscripten"))]
 #[cfg_attr(not(panic = "unwind"), ignore = "test requires unwinding support")]
 fn test_should_panic_but_succeeds() {
     let should_panic_variants = [ShouldPanic::Yes, ShouldPanic::YesWithMessage("error message")];
@@ -469,7 +479,7 @@ fn parse_include_ignored_flag() {
 }
 
 #[test]
-fn filter_for_ignored_option() {
+pub fn filter_for_ignored_option() {
     // When we run ignored tests the test filter should filter out all the
     // unignored tests and flip the ignore flag on the rest to false
 
@@ -486,7 +496,7 @@ fn filter_for_ignored_option() {
 }
 
 #[test]
-fn run_include_ignored_option() {
+pub fn run_include_ignored_option() {
     // When we "--include-ignored" tests, the ignore flag should be set to false on
     // all tests and no test filtered out
 
@@ -503,7 +513,7 @@ fn run_include_ignored_option() {
 }
 
 #[test]
-fn exclude_should_panic_option() {
+pub fn exclude_should_panic_option() {
     let mut opts = TestOpts::new();
     opts.run_tests = true;
     opts.exclude_should_panic = true;
@@ -534,7 +544,7 @@ fn exclude_should_panic_option() {
 }
 
 #[test]
-fn exact_filter_match() {
+pub fn exact_filter_match() {
     fn tests() -> Vec<TestDescAndFn> {
         ["base", "base::test", "base::test1", "base::test2"]
             .into_iter()
@@ -657,7 +667,7 @@ fn sample_tests() -> Vec<TestDescAndFn> {
 }
 
 #[test]
-fn shuffle_tests() {
+pub fn shuffle_tests() {
     let mut opts = TestOpts::new();
     opts.shuffle = true;
 
@@ -676,7 +686,7 @@ fn shuffle_tests() {
 }
 
 #[test]
-fn shuffle_tests_with_seed() {
+pub fn shuffle_tests_with_seed() {
     let mut opts = TestOpts::new();
     opts.shuffle = true;
 
@@ -694,7 +704,7 @@ fn shuffle_tests_with_seed() {
 }
 
 #[test]
-fn order_depends_on_more_than_seed() {
+pub fn order_depends_on_more_than_seed() {
     let mut opts = TestOpts::new();
     opts.shuffle = true;
 
@@ -722,7 +732,7 @@ fn order_depends_on_more_than_seed() {
 }
 
 #[test]
-fn test_metricmap_compare() {
+pub fn test_metricmap_compare() {
     let mut m1 = MetricMap::new();
     let mut m2 = MetricMap::new();
     m1.insert_metric("in-both-noise", 1000.0, 200.0);
@@ -745,7 +755,7 @@ fn test_metricmap_compare() {
 }
 
 #[test]
-fn test_bench_once_no_iter() {
+pub fn test_bench_once_no_iter() {
     fn f(_: &mut Bencher) -> Result<(), String> {
         Ok(())
     }
@@ -753,7 +763,7 @@ fn test_bench_once_no_iter() {
 }
 
 #[test]
-fn test_bench_once_iter() {
+pub fn test_bench_once_iter() {
     fn f(b: &mut Bencher) -> Result<(), String> {
         b.iter(|| {});
         Ok(())
@@ -762,7 +772,7 @@ fn test_bench_once_iter() {
 }
 
 #[test]
-fn test_bench_no_iter() {
+pub fn test_bench_no_iter() {
     fn f(_: &mut Bencher) -> Result<(), String> {
         Ok(())
     }
@@ -789,7 +799,7 @@ fn test_bench_no_iter() {
 }
 
 #[test]
-fn test_bench_iter() {
+pub fn test_bench_iter() {
     fn f(b: &mut Bencher) -> Result<(), String> {
         b.iter(|| {});
         Ok(())

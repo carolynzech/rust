@@ -1,4 +1,6 @@
 //! Emscripten-specific raw type definitions
+//! This is basically exactly the same as the linux definitions,
+//! except using the musl-specific stat64 structure in liblibc.
 
 #![stable(feature = "raw_ext", since = "1.1.0")]
 #![deprecated(

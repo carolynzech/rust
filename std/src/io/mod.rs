@@ -301,17 +301,12 @@ mod tests;
 pub use core::io::{BorrowedBuf, BorrowedCursor};
 use core::slice::memchr;
 
+pub(crate) use error::const_io_error;
+
 #[stable(feature = "bufwriter_into_parts", since = "1.56.0")]
 pub use self::buffered::WriterPanicked;
 #[unstable(feature = "raw_os_error_ty", issue = "107792")]
 pub use self::error::RawOsError;
-#[doc(hidden)]
-#[unstable(feature = "io_const_error_internals", issue = "none")]
-pub use self::error::SimpleMessage;
-#[unstable(feature = "io_const_error", issue = "133448")]
-pub use self::error::const_error;
-#[unstable(feature = "anonymous_pipe", issue = "127154")]
-pub use self::pipe::{PipeReader, PipeWriter, pipe};
 #[stable(feature = "is_terminal", since = "1.70.0")]
 pub use self::stdio::IsTerminal;
 pub(crate) use self::stdio::attempt_print_to_stderr;
@@ -339,12 +334,11 @@ pub(crate) mod copy;
 mod cursor;
 mod error;
 mod impls;
-mod pipe;
 pub mod prelude;
 mod stdio;
 mod util;
 
-const DEFAULT_BUF_SIZE: usize = crate::sys::io::DEFAULT_BUF_SIZE;
+const DEFAULT_BUF_SIZE: usize = crate::sys_common::io::DEFAULT_BUF_SIZE;
 
 pub(crate) use stdio::cleanup;
 
@@ -1086,7 +1080,7 @@ pub trait Read {
     ///     let f = BufReader::new(File::open("foo.txt")?);
     ///
     ///     for byte in f.bytes() {
-    ///         println!("{}", byte?);
+    ///         println!("{}", byte.unwrap());
     ///     }
     ///     Ok(())
     /// }
@@ -1998,16 +1992,15 @@ pub trait Seek {
     ///     .write(true)
     ///     .read(true)
     ///     .create(true)
-    ///     .open("foo.txt")?;
+    ///     .open("foo.txt").unwrap();
     ///
     /// let hello = "Hello!\n";
-    /// write!(f, "{hello}")?;
-    /// f.rewind()?;
+    /// write!(f, "{hello}").unwrap();
+    /// f.rewind().unwrap();
     ///
     /// let mut buf = String::new();
-    /// f.read_to_string(&mut buf)?;
+    /// f.read_to_string(&mut buf).unwrap();
     /// assert_eq!(&buf, hello);
-    /// # std::io::Result::Ok(())
     /// ```
     #[stable(feature = "seek_rewind", since = "1.55.0")]
     fn rewind(&mut self) -> Result<()> {
@@ -2216,9 +2209,8 @@ fn skip_until<R: BufRead + ?Sized>(r: &mut R, delim: u8) -> Result<usize> {
 ///
 /// let stdin = io::stdin();
 /// for line in stdin.lock().lines() {
-///     println!("{}", line?);
+///     println!("{}", line.unwrap());
 /// }
-/// # std::io::Result::Ok(())
 /// ```
 ///
 /// If you have something that implements [`Read`], you can use the [`BufReader`
@@ -2241,8 +2233,7 @@ fn skip_until<R: BufRead + ?Sized>(r: &mut R, delim: u8) -> Result<usize> {
 ///     let f = BufReader::new(f);
 ///
 ///     for line in f.lines() {
-///         let line = line?;
-///         println!("{line}");
+///         println!("{}", line.unwrap());
 ///     }
 ///
 ///     Ok(())
@@ -2280,7 +2271,7 @@ pub trait BufRead: Read {
     /// let stdin = io::stdin();
     /// let mut stdin = stdin.lock();
     ///
-    /// let buffer = stdin.fill_buf()?;
+    /// let buffer = stdin.fill_buf().unwrap();
     ///
     /// // work with buffer
     /// println!("{buffer:?}");
@@ -2288,7 +2279,6 @@ pub trait BufRead: Read {
     /// // ensure the bytes we worked with aren't returned again later
     /// let length = buffer.len();
     /// stdin.consume(length);
-    /// # std::io::Result::Ok(())
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     fn fill_buf(&mut self) -> Result<&[u8]>;
@@ -2334,13 +2324,12 @@ pub trait BufRead: Read {
     /// let stdin = io::stdin();
     /// let mut stdin = stdin.lock();
     ///
-    /// while stdin.has_data_left()? {
+    /// while stdin.has_data_left().unwrap() {
     ///     let mut line = String::new();
-    ///     stdin.read_line(&mut line)?;
+    ///     stdin.read_line(&mut line).unwrap();
     ///     // work with line
     ///     println!("{line:?}");
     /// }
-    /// # std::io::Result::Ok(())
     /// ```
     #[unstable(feature = "buf_read_has_data_left", reason = "recently added", issue = "86423")]
     fn has_data_left(&mut self) -> Result<bool> {

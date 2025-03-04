@@ -83,7 +83,7 @@
 #[doc(inline)]
 #[stable(feature = "alloc_c_string", since = "1.64.0")]
 pub use self::c_str::CString;
-#[doc(inline)]
+#[doc(no_inline)]
 #[stable(feature = "alloc_c_string", since = "1.64.0")]
 pub use self::c_str::{FromVecWithNulError, IntoStringError, NulError};
 

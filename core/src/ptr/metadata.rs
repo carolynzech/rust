@@ -53,8 +53,7 @@ use crate::ptr::NonNull;
 ///
 /// [`to_raw_parts`]: *const::to_raw_parts
 #[lang = "pointee_trait"]
-#[rustc_deny_explicit_impl]
-#[rustc_do_not_implement_via_object]
+#[rustc_deny_explicit_impl(implement_via_object = false)]
 pub trait Pointee {
     /// The type for metadata in pointers and references to `Self`.
     #[lang = "metadata_type"]
@@ -93,6 +92,7 @@ pub trait Thin = Pointee<Metadata = ()>;
 ///
 /// assert_eq!(std::ptr::metadata("foo"), 3_usize);
 /// ```
+#[cfg_attr(bootstrap, rustc_const_stable(feature = "ptr_metadata_const", since = "1.83.0"))]
 #[inline]
 pub const fn metadata<T: ?Sized>(ptr: *const T) -> <T as Pointee>::Metadata {
     ptr_metadata(ptr)
@@ -106,6 +106,7 @@ pub const fn metadata<T: ?Sized>(ptr: *const T) -> <T as Pointee>::Metadata {
 ///
 /// [`slice::from_raw_parts`]: crate::slice::from_raw_parts
 #[unstable(feature = "ptr_metadata", issue = "81513")]
+#[cfg_attr(bootstrap, rustc_const_stable(feature = "ptr_metadata_const", since = "1.83.0"))]
 #[inline]
 pub const fn from_raw_parts<T: ?Sized>(
     data_pointer: *const impl Thin,
@@ -119,6 +120,7 @@ pub const fn from_raw_parts<T: ?Sized>(
 ///
 /// See the documentation of [`from_raw_parts`] for more details.
 #[unstable(feature = "ptr_metadata", issue = "81513")]
+#[cfg_attr(bootstrap, rustc_const_stable(feature = "ptr_metadata_const", since = "1.83.0"))]
 #[inline]
 pub const fn from_raw_parts_mut<T: ?Sized>(
     data_pointer: *mut impl Thin,

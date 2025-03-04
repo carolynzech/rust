@@ -393,7 +393,7 @@ impl Command {
 fn os2c(s: &OsStr, saw_nul: &mut bool) -> CString {
     CString::new(s.as_bytes()).unwrap_or_else(|_e| {
         *saw_nul = true;
-        c"<string-with-nul>".to_owned()
+        CString::new("<string-with-nul>").unwrap()
     })
 }
 

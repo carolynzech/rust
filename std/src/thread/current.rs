@@ -15,7 +15,7 @@ local_pointer! {
 ///
 /// We store the thread ID so that it never gets destroyed during the lifetime
 /// of a thread, either using `#[thread_local]` or multiple `local_pointer!`s.
-pub(super) mod id {
+mod id {
     use super::*;
 
     cfg_if::cfg_if! {
@@ -27,7 +27,7 @@ pub(super) mod id {
 
             pub(super) const CHEAP: bool = true;
 
-            pub(crate) fn get() -> Option<ThreadId> {
+            pub(super) fn get() -> Option<ThreadId> {
                 ID.get()
             }
 
@@ -44,7 +44,7 @@ pub(super) mod id {
 
             pub(super) const CHEAP: bool = false;
 
-            pub(crate) fn get() -> Option<ThreadId> {
+            pub(super) fn get() -> Option<ThreadId> {
                 let id0 = ID0.get().addr() as u64;
                 let id16 = ID16.get().addr() as u64;
                 let id32 = ID32.get().addr() as u64;
@@ -67,7 +67,7 @@ pub(super) mod id {
 
             pub(super) const CHEAP: bool = false;
 
-            pub(crate) fn get() -> Option<ThreadId> {
+            pub(super) fn get() -> Option<ThreadId> {
                 let id0 = ID0.get().addr() as u64;
                 let id32 = ID32.get().addr() as u64;
                 ThreadId::from_u64((id32 << 32) + id0)
@@ -85,7 +85,7 @@ pub(super) mod id {
 
             pub(super) const CHEAP: bool = true;
 
-            pub(crate) fn get() -> Option<ThreadId> {
+            pub(super) fn get() -> Option<ThreadId> {
                 let id = ID.get().addr() as u64;
                 ThreadId::from_u64(id)
             }
@@ -112,7 +112,7 @@ pub(super) mod id {
 
 /// Tries to set the thread handle for the current thread. Fails if a handle was
 /// already set or if the thread ID of `thread` would change an already-set ID.
-pub(super) fn set_current(thread: Thread) -> Result<(), Thread> {
+pub(crate) fn set_current(thread: Thread) -> Result<(), Thread> {
     if CURRENT.get() != NONE {
         return Err(thread);
     }
@@ -136,35 +136,32 @@ pub(super) fn set_current(thread: Thread) -> Result<(), Thread> {
 /// one thread and is guaranteed not to call the global allocator.
 #[inline]
 pub(crate) fn current_id() -> ThreadId {
-    // If accessing the persistent thread ID takes multiple TLS accesses, try
+    // If accessing the persistant thread ID takes multiple TLS accesses, try
     // to retrieve it from the current thread handle, which will only take one
     // TLS access.
     if !id::CHEAP {
-        if let Some(id) = try_with_current(|t| t.map(|t| t.id())) {
-            return id;
+        let current = CURRENT.get();
+        if current > DESTROYED {
+            unsafe {
+                let current = ManuallyDrop::new(Thread::from_raw(current));
+                return current.id();
+            }
         }
     }
 
     id::get_or_init()
 }
 
-/// Gets a reference to the handle of the thread that invokes it, if the handle
-/// has been initialized.
-pub(super) fn try_with_current<F, R>(f: F) -> R
-where
-    F: FnOnce(Option<&Thread>) -> R,
-{
+/// Gets a handle to the thread that invokes it, if the handle has been initialized.
+pub(crate) fn try_current() -> Option<Thread> {
     let current = CURRENT.get();
     if current > DESTROYED {
-        // SAFETY: `Arc` does not contain interior mutability, so it does not
-        // matter that the address of the handle might be different depending
-        // on where this is called.
         unsafe {
             let current = ManuallyDrop::new(Thread::from_raw(current));
-            f(Some(&current))
+            Some((*current).clone())
         }
     } else {
-        f(None)
+        None
     }
 }
 
@@ -179,7 +176,7 @@ pub(crate) fn current_or_unnamed() -> Thread {
             (*current).clone()
         }
     } else if current == DESTROYED {
-        Thread::new(id::get_or_init(), None)
+        Thread::new_unnamed(id::get_or_init())
     } else {
         init_current(current)
     }
@@ -224,7 +221,7 @@ fn init_current(current: *mut ()) -> Thread {
         CURRENT.set(BUSY);
         // If the thread ID was initialized already, use it.
         let id = id::get_or_init();
-        let thread = Thread::new(id, None);
+        let thread = Thread::new_unnamed(id);
 
         // Make sure that `crate::rt::thread_cleanup` will be run, which will
         // call `drop_current`.
@@ -246,17 +243,17 @@ fn init_current(current: *mut ()) -> Thread {
         // a particular API should be entirely allocation-free, feel free to open
         // an issue on the Rust repository, we'll see what we can do.
         rtabort!(
-            "\n\
-            Attempted to access thread-local data while allocating said data.\n\
-            Do not access functions that allocate in the global allocator!\n\
-            This is a bug in the global allocator.\n\
-            "
+            "\n
+            Attempted to access thread-local data while allocating said data.\n
+            Do not access functions that allocate in the global allocator!\n
+            This is a bug in the global allocator.\n
+        "
         )
     } else {
         debug_assert_eq!(current, DESTROYED);
         panic!(
-            "use of std::thread::current() is not possible after the thread's \
-            local data has been destroyed"
+            "use of std::thread::current() is not possible after the thread's
+         local data has been destroyed"
         )
     }
 }

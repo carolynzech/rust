@@ -13,6 +13,9 @@ pub mod env;
 //pub mod fd;
 #[path = "../unsupported/fs.rs"]
 pub mod fs;
+#[path = "../unsupported/io.rs"]
+pub mod io;
+pub mod net;
 pub mod os;
 #[path = "../unsupported/pipe.rs"]
 pub mod pipe;
@@ -23,14 +26,6 @@ pub mod thread;
 #[allow(non_upper_case_globals)]
 #[path = "../unix/time.rs"]
 pub mod time;
-
-#[path = "../unix/sync"]
-pub mod sync {
-    mod condvar;
-    mod mutex;
-    pub use condvar::Condvar;
-    pub use mutex::Mutex;
-}
 
 use crate::io::ErrorKind;
 
@@ -68,7 +63,7 @@ pub fn decode_error_kind(errno: i32) -> ErrorKind {
         libc::ECONNREFUSED => ConnectionRefused,
         libc::ECONNRESET => ConnectionReset,
         libc::EDEADLK => Deadlock,
-        libc::EDQUOT => QuotaExceeded,
+        libc::EDQUOT => FilesystemQuotaExceeded,
         libc::EEXIST => AlreadyExists,
         libc::EFBIG => FileTooLarge,
         libc::EHOSTUNREACH => HostUnreachable,

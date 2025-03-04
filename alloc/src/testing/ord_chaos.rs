@@ -4,7 +4,7 @@ use std::ptr;
 
 // Minimal type with an `Ord` implementation violating transitivity.
 #[derive(Debug)]
-pub(crate) enum Cyclic3 {
+pub enum Cyclic3 {
     A,
     B,
     C,
@@ -37,16 +37,16 @@ impl Eq for Cyclic3 {}
 
 // Controls the ordering of values wrapped by `Governed`.
 #[derive(Debug)]
-pub(crate) struct Governor {
+pub struct Governor {
     flipped: Cell<bool>,
 }
 
 impl Governor {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Governor { flipped: Cell::new(false) }
     }
 
-    pub(crate) fn flip(&self) {
+    pub fn flip(&self) {
         self.flipped.set(!self.flipped.get());
     }
 }
@@ -55,7 +55,7 @@ impl Governor {
 // (assuming that `T` respects total order), but can suddenly be made to invert
 // that total order.
 #[derive(Debug)]
-pub(crate) struct Governed<'a, T>(pub T, pub &'a Governor);
+pub struct Governed<'a, T>(pub T, pub &'a Governor);
 
 impl<T: Ord> PartialOrd for Governed<'_, T> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {

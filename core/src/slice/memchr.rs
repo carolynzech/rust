@@ -16,6 +16,7 @@ const USIZE_BYTES: usize = mem::size_of::<usize>();
 /// bytes where the borrow propagated all the way to the most significant
 /// bit."
 #[inline]
+#[cfg_attr(bootstrap, rustc_const_stable(feature = "const_memchr", since = "1.65.0"))]
 const fn contains_zero_byte(x: usize) -> bool {
     x.wrapping_sub(LO_USIZE) & !x & HI_USIZE != 0
 }
@@ -23,6 +24,7 @@ const fn contains_zero_byte(x: usize) -> bool {
 /// Returns the first index matching the byte `x` in `text`.
 #[inline]
 #[must_use]
+#[cfg_attr(bootstrap, rustc_const_stable(feature = "const_memchr", since = "1.65.0"))]
 pub const fn memchr(x: u8, text: &[u8]) -> Option<usize> {
     // Fast path for small slices.
     if text.len() < 2 * USIZE_BYTES {
@@ -33,6 +35,7 @@ pub const fn memchr(x: u8, text: &[u8]) -> Option<usize> {
 }
 
 #[inline]
+#[cfg_attr(bootstrap, rustc_const_stable(feature = "const_memchr", since = "1.65.0"))]
 const fn memchr_naive(x: u8, text: &[u8]) -> Option<usize> {
     let mut i = 0;
 
@@ -49,6 +52,7 @@ const fn memchr_naive(x: u8, text: &[u8]) -> Option<usize> {
 }
 
 #[rustc_allow_const_fn_unstable(const_eval_select)] // fallback impl has same behavior
+#[cfg_attr(bootstrap, rustc_const_stable(feature = "const_memchr", since = "1.65.0"))]
 const fn memchr_aligned(x: u8, text: &[u8]) -> Option<usize> {
     // The runtime version behaves the same as the compiletime version, it's
     // just more optimized.

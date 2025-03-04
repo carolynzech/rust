@@ -5,5 +5,3 @@
 extern crate test;
 
 mod hash;
-mod path;
-mod time;

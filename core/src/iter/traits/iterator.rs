@@ -1553,7 +1553,7 @@ pub trait Iterator {
     ///
     /// # Panics
     ///
-    /// Panics if `N` is zero. This check will most probably get changed to a
+    /// Panics if `N` is 0. This check will most probably get changed to a
     /// compile time error before this method gets stabilized.
     ///
     /// ```should_panic
@@ -2564,7 +2564,7 @@ pub trait Iterator {
     /// # Example
     ///
     /// ```
-    /// let reduced: i32 = (1..10).reduce(|acc, e| acc + e).unwrap_or(0);
+    /// let reduced: i32 = (1..10).reduce(|acc, e| acc + e).unwrap();
     /// assert_eq!(reduced, 45);
     ///
     /// // Which is equivalent to doing it with `fold`:
@@ -3051,7 +3051,6 @@ pub trait Iterator {
     ///
     /// // we can still use `iter`, as there are more elements.
     /// assert_eq!(iter.next(), Some(&-1));
-    /// assert_eq!(iter.next_back(), Some(&3));
     /// ```
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
@@ -3088,7 +3087,7 @@ pub trait Iterator {
     ///     [2.4, f32::NAN, 1.3]
     ///         .into_iter()
     ///         .reduce(f32::max)
-    ///         .unwrap_or(0.),
+    ///         .unwrap(),
     ///     2.4
     /// );
     /// ```
@@ -3124,7 +3123,7 @@ pub trait Iterator {
     ///     [2.4, f32::NAN, 1.3]
     ///         .into_iter()
     ///         .reduce(f32::min)
-    ///         .unwrap_or(0.),
+    ///         .unwrap(),
     ///     1.3
     /// );
     /// ```
@@ -3455,7 +3454,7 @@ pub trait Iterator {
     ///
     /// # Panics
     ///
-    /// Panics if `N` is zero.
+    /// Panics if `N` is 0.
     ///
     /// # Examples
     ///
@@ -3493,8 +3492,7 @@ pub trait Iterator {
     ///
     /// Takes each element, adds them together, and returns the result.
     ///
-    /// An empty iterator returns the *additive identity* ("zero") of the type,
-    /// which is `0` for integers and `-0.0` for floats.
+    /// An empty iterator returns the zero value of the type.
     ///
     /// `sum()` can be used to sum any type implementing [`Sum`][`core::iter::Sum`],
     /// including [`Option`][`Option::sum`] and [`Result`][`Result::sum`].
@@ -3512,10 +3510,6 @@ pub trait Iterator {
     /// let sum: i32 = a.iter().sum();
     ///
     /// assert_eq!(sum, 6);
-    ///
-    /// let b: Vec<f32> = vec![];
-    /// let sum: f32 = b.iter().sum();
-    /// assert_eq!(sum, -0.0_f32);
     /// ```
     #[stable(feature = "iter_arith", since = "1.11.0")]
     fn sum<S>(self) -> S

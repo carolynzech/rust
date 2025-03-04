@@ -155,6 +155,9 @@ use crate::collections::TryReserveError;
 use crate::slice;
 use crate::vec::{self, AsVecIntoIter, Vec};
 
+#[cfg(test)]
+mod tests;
+
 /// A priority queue implemented with a binary heap.
 ///
 /// This will be a max-heap.
@@ -449,7 +452,7 @@ impl<T: Ord> BinaryHeap<T> {
     ///
     /// The binary heap will be able to hold at least `capacity` elements without
     /// reallocating. This method is allowed to allocate for more elements than
-    /// `capacity`. If `capacity` is zero, the binary heap will not allocate.
+    /// `capacity`. If `capacity` is 0, the binary heap will not allocate.
     ///
     /// # Examples
     ///
@@ -483,6 +486,7 @@ impl<T: Ord, A: Allocator> BinaryHeap<T, A> {
     /// heap.push(4);
     /// ```
     #[unstable(feature = "allocator_api", issue = "32838")]
+    #[rustc_const_unstable(feature = "const_binary_heap_new_in", issue = "125961")]
     #[must_use]
     pub const fn new_in(alloc: A) -> BinaryHeap<T, A> {
         BinaryHeap { data: Vec::new_in(alloc) }
@@ -492,7 +496,7 @@ impl<T: Ord, A: Allocator> BinaryHeap<T, A> {
     ///
     /// The binary heap will be able to hold at least `capacity` elements without
     /// reallocating. This method is allowed to allocate for more elements than
-    /// `capacity`. If `capacity` is zero, the binary heap will not allocate.
+    /// `capacity`. If `capacity` is 0, the binary heap will not allocate.
     ///
     /// # Examples
     ///
@@ -531,7 +535,8 @@ impl<T: Ord, A: Allocator> BinaryHeap<T, A> {
     /// heap.push(1);
     /// heap.push(5);
     /// heap.push(2);
-    /// if let Some(mut val) = heap.peek_mut() {
+    /// {
+    ///     let mut val = heap.peek_mut().unwrap();
     ///     *val = 0;
     /// }
     /// assert_eq!(heap.peek(), Some(&2));

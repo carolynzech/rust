@@ -133,8 +133,7 @@ pub trait AsyncDrop {
 }
 
 #[lang = "async_destruct"]
-#[rustc_deny_explicit_impl]
-#[rustc_do_not_implement_via_object]
+#[rustc_deny_explicit_impl(implement_via_object = false)]
 trait AsyncDestruct {
     type AsyncDestructor: Future<Output = ()>;
 }

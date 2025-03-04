@@ -9,9 +9,6 @@ use crate::mem::{self, ManuallyDrop};
 use crate::sys::cvt;
 use crate::{fmt, io, sys};
 
-// The max here is -2, in two's complement. -1 is `INVALID_SOCKET`.
-type ValidRawSocket = core::num::niche_types::NotAllOnes<RawSocket>;
-
 /// A borrowed socket.
 ///
 /// This has a lifetime parameter to tie it to the lifetime of something that
@@ -27,10 +24,17 @@ type ValidRawSocket = core::num::niche_types::NotAllOnes<RawSocket>;
 /// socket, which is then borrowed under the same lifetime.
 #[derive(Copy, Clone)]
 #[repr(transparent)]
+#[rustc_layout_scalar_valid_range_start(0)]
+// This is -2, in two's complement. -1 is `INVALID_SOCKET`.
+#[cfg_attr(target_pointer_width = "32", rustc_layout_scalar_valid_range_end(0xFF_FF_FF_FE))]
+#[cfg_attr(
+    target_pointer_width = "64",
+    rustc_layout_scalar_valid_range_end(0xFF_FF_FF_FF_FF_FF_FF_FE)
+)]
 #[rustc_nonnull_optimization_guaranteed]
 #[stable(feature = "io_safety", since = "1.63.0")]
 pub struct BorrowedSocket<'socket> {
-    socket: ValidRawSocket,
+    socket: RawSocket,
     _phantom: PhantomData<&'socket OwnedSocket>,
 }
 
@@ -43,10 +47,17 @@ pub struct BorrowedSocket<'socket> {
 /// argument or returned as an owned value, and it never has the value
 /// `INVALID_SOCKET`.
 #[repr(transparent)]
+#[rustc_layout_scalar_valid_range_start(0)]
+// This is -2, in two's complement. -1 is `INVALID_SOCKET`.
+#[cfg_attr(target_pointer_width = "32", rustc_layout_scalar_valid_range_end(0xFF_FF_FF_FE))]
+#[cfg_attr(
+    target_pointer_width = "64",
+    rustc_layout_scalar_valid_range_end(0xFF_FF_FF_FF_FF_FF_FF_FE)
+)]
 #[rustc_nonnull_optimization_guaranteed]
 #[stable(feature = "io_safety", since = "1.63.0")]
 pub struct OwnedSocket {
-    socket: ValidRawSocket,
+    socket: RawSocket,
 }
 
 impl BorrowedSocket<'_> {
@@ -62,8 +73,7 @@ impl BorrowedSocket<'_> {
     #[stable(feature = "io_safety", since = "1.63.0")]
     pub const unsafe fn borrow_raw(socket: RawSocket) -> Self {
         assert!(socket != sys::c::INVALID_SOCKET as RawSocket);
-        let socket = unsafe { ValidRawSocket::new_unchecked(socket) };
-        Self { socket, _phantom: PhantomData }
+        unsafe { Self { socket, _phantom: PhantomData } }
     }
 }
 
@@ -91,7 +101,7 @@ impl OwnedSocket {
 
     #[cfg(target_vendor = "uwp")]
     pub(crate) fn set_no_inherit(&self) -> io::Result<()> {
-        Err(io::const_error!(io::ErrorKind::Unsupported, "Unavailable on UWP"))
+        Err(io::const_io_error!(io::ErrorKind::Unsupported, "Unavailable on UWP"))
     }
 }
 
@@ -162,7 +172,7 @@ fn last_error() -> io::Error {
 impl AsRawSocket for BorrowedSocket<'_> {
     #[inline]
     fn as_raw_socket(&self) -> RawSocket {
-        self.socket.as_inner()
+        self.socket
     }
 }
 
@@ -170,7 +180,7 @@ impl AsRawSocket for BorrowedSocket<'_> {
 impl AsRawSocket for OwnedSocket {
     #[inline]
     fn as_raw_socket(&self) -> RawSocket {
-        self.socket.as_inner()
+        self.socket
     }
 }
 
@@ -178,7 +188,7 @@ impl AsRawSocket for OwnedSocket {
 impl IntoRawSocket for OwnedSocket {
     #[inline]
     fn into_raw_socket(self) -> RawSocket {
-        ManuallyDrop::new(self).socket.as_inner()
+        ManuallyDrop::new(self).socket
     }
 }
 
@@ -186,9 +196,10 @@ impl IntoRawSocket for OwnedSocket {
 impl FromRawSocket for OwnedSocket {
     #[inline]
     unsafe fn from_raw_socket(socket: RawSocket) -> Self {
-        debug_assert_ne!(socket, sys::c::INVALID_SOCKET as RawSocket);
-        let socket = unsafe { ValidRawSocket::new_unchecked(socket) };
-        Self { socket }
+        unsafe {
+            debug_assert_ne!(socket, sys::c::INVALID_SOCKET as RawSocket);
+            Self { socket }
+        }
     }
 }
 
@@ -197,7 +208,7 @@ impl Drop for OwnedSocket {
     #[inline]
     fn drop(&mut self) {
         unsafe {
-            let _ = sys::c::closesocket(self.socket.as_inner() as sys::c::SOCKET);
+            let _ = sys::c::closesocket(self.socket as sys::c::SOCKET);
         }
     }
 }
@@ -262,14 +273,6 @@ impl<T: AsSocket> AsSocket for crate::sync::Arc<T> {
 
 #[stable(feature = "as_windows_ptrs", since = "1.71.0")]
 impl<T: AsSocket> AsSocket for crate::rc::Rc<T> {
-    #[inline]
-    fn as_socket(&self) -> BorrowedSocket<'_> {
-        (**self).as_socket()
-    }
-}
-
-#[unstable(feature = "unique_rc_arc", issue = "112566")]
-impl<T: AsSocket + ?Sized> AsSocket for crate::rc::UniqueRc<T> {
     #[inline]
     fn as_socket(&self) -> BorrowedSocket<'_> {
         (**self).as_socket()

@@ -5,6 +5,7 @@ mod tests;
 
 #[cfg(not(any(
     target_os = "linux",
+    target_os = "emscripten",
     target_os = "l4re",
     target_os = "android",
     target_os = "hurd",
@@ -13,6 +14,7 @@ use libc::off_t as off64_t;
 #[cfg(any(
     target_os = "android",
     target_os = "linux",
+    target_os = "emscripten",
     target_os = "l4re",
     target_os = "hurd",
 ))]

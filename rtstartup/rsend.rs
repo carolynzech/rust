@@ -6,7 +6,6 @@
 #![crate_type = "rlib"]
 #![no_core]
 #![allow(internal_features)]
-#![warn(unreachable_pub)]
 
 #[lang = "sized"]
 trait Sized {}

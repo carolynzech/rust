@@ -102,9 +102,12 @@ pub type _Unwind_Exception_Cleanup_Fn =
 // rustc_codegen_ssa::src::back::symbol_export, rustc_middle::middle::exported_symbols
 // and RFC 2841
 #[cfg_attr(
-    all(
-        feature = "llvm-libunwind",
-        any(target_os = "fuchsia", target_os = "linux", target_os = "xous")
+    any(
+        all(
+            feature = "llvm-libunwind",
+            any(target_os = "fuchsia", target_os = "linux", target_os = "xous")
+        ),
+        all(target_os = "windows", target_env = "gnu", target_abi = "llvm")
     ),
     link(name = "unwind", kind = "static", modifiers = "-bundle")
 )]

@@ -11,7 +11,7 @@ use std::{env, fmt};
 
 use super::types::{TestDesc, TestType};
 
-pub(crate) const TEST_WARN_TIMEOUT_S: u64 = 60;
+pub const TEST_WARN_TIMEOUT_S: u64 = 60;
 
 /// This small module contains constants used by `report-time` option.
 /// Those constants values will be used if corresponding environment variables are not set.
@@ -22,42 +22,42 @@ pub(crate) const TEST_WARN_TIMEOUT_S: u64 = 60;
 ///
 /// Example of the expected format is `RUST_TEST_TIME_xxx=100,200`, where 100 means
 /// warn time, and 200 means critical time.
-pub(crate) mod time_constants {
+pub mod time_constants {
     use std::time::Duration;
 
     use super::TEST_WARN_TIMEOUT_S;
 
     /// Environment variable for overriding default threshold for unit-tests.
-    pub(crate) const UNIT_ENV_NAME: &str = "RUST_TEST_TIME_UNIT";
+    pub const UNIT_ENV_NAME: &str = "RUST_TEST_TIME_UNIT";
 
     // Unit tests are supposed to be really quick.
-    pub(crate) const UNIT_WARN: Duration = Duration::from_millis(50);
-    pub(crate) const UNIT_CRITICAL: Duration = Duration::from_millis(100);
+    pub const UNIT_WARN: Duration = Duration::from_millis(50);
+    pub const UNIT_CRITICAL: Duration = Duration::from_millis(100);
 
     /// Environment variable for overriding default threshold for unit-tests.
-    pub(crate) const INTEGRATION_ENV_NAME: &str = "RUST_TEST_TIME_INTEGRATION";
+    pub const INTEGRATION_ENV_NAME: &str = "RUST_TEST_TIME_INTEGRATION";
 
     // Integration tests may have a lot of work, so they can take longer to execute.
-    pub(crate) const INTEGRATION_WARN: Duration = Duration::from_millis(500);
-    pub(crate) const INTEGRATION_CRITICAL: Duration = Duration::from_millis(1000);
+    pub const INTEGRATION_WARN: Duration = Duration::from_millis(500);
+    pub const INTEGRATION_CRITICAL: Duration = Duration::from_millis(1000);
 
     /// Environment variable for overriding default threshold for unit-tests.
-    pub(crate) const DOCTEST_ENV_NAME: &str = "RUST_TEST_TIME_DOCTEST";
+    pub const DOCTEST_ENV_NAME: &str = "RUST_TEST_TIME_DOCTEST";
 
     // Doctests are similar to integration tests, because they can include a lot of
     // initialization code.
-    pub(crate) const DOCTEST_WARN: Duration = INTEGRATION_WARN;
-    pub(crate) const DOCTEST_CRITICAL: Duration = INTEGRATION_CRITICAL;
+    pub const DOCTEST_WARN: Duration = INTEGRATION_WARN;
+    pub const DOCTEST_CRITICAL: Duration = INTEGRATION_CRITICAL;
 
     // Do not suppose anything about unknown tests, base limits on the
     // `TEST_WARN_TIMEOUT_S` constant.
-    pub(crate) const UNKNOWN_WARN: Duration = Duration::from_secs(TEST_WARN_TIMEOUT_S);
-    pub(crate) const UNKNOWN_CRITICAL: Duration = Duration::from_secs(TEST_WARN_TIMEOUT_S * 2);
+    pub const UNKNOWN_WARN: Duration = Duration::from_secs(TEST_WARN_TIMEOUT_S);
+    pub const UNKNOWN_CRITICAL: Duration = Duration::from_secs(TEST_WARN_TIMEOUT_S * 2);
 }
 
 /// Returns an `Instance` object denoting when the test should be considered
 /// timed out.
-pub(crate) fn get_default_test_timeout() -> Instant {
+pub fn get_default_test_timeout() -> Instant {
     Instant::now() + Duration::from_secs(TEST_WARN_TIMEOUT_S)
 }
 
@@ -73,7 +73,7 @@ impl fmt::Display for TestExecTime {
 
 /// The measured execution time of the whole test suite.
 #[derive(Debug, Clone, Default, PartialEq)]
-pub(crate) struct TestSuiteExecTime(pub Duration);
+pub struct TestSuiteExecTime(pub Duration);
 
 impl fmt::Display for TestSuiteExecTime {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

@@ -13,7 +13,7 @@ pub(crate) struct JsonFormatter<T> {
 }
 
 impl<T: Write> JsonFormatter<T> {
-    pub(crate) fn new(out: OutputLocation<T>) -> Self {
+    pub fn new(out: OutputLocation<T>) -> Self {
         Self { out }
     }
 

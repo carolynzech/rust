@@ -1,15 +1,11 @@
-// tidy-alphabetical-start
-#![allow(internal_features)]
-#![feature(no_core)]
+#![no_std]
 #![feature(profiler_runtime)]
-#![feature(staged_api)]
-// tidy-alphabetical-end
-
-// Other attributes:
-#![no_core]
 #![profiler_runtime]
 #![unstable(
     feature = "profiler_runtime_lib",
     reason = "internal implementation detail of rustc right now",
     issue = "none"
 )]
+#![allow(unused_features)]
+#![allow(internal_features)]
+#![feature(staged_api)]

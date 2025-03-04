@@ -44,7 +44,7 @@
 //!    called. The `lang` attribute is called `eh_personality`.
 
 // Since core defines many fundamental lang items, all tests live in a
-// separate crate, coretests (library/coretests), to avoid bizarre issues.
+// separate crate, libcoretest (library/core/tests), to avoid bizarre issues.
 //
 // Here we explicitly #[cfg]-out this whole crate when testing. If we don't do
 // this, both the generated test artifact and the linked libtest (which
@@ -101,24 +101,38 @@
 #![warn(multiple_supertrait_upcastable)]
 #![allow(internal_features)]
 #![deny(ffi_unwind_calls)]
-#![warn(unreachable_pub)]
 // Do not check link redundancy on bootstraping phase
 #![allow(rustdoc::redundant_explicit_links)]
 #![warn(rustdoc::unescaped_backticks)]
 //
 // Library features:
 // tidy-alphabetical-start
+#![cfg_attr(bootstrap, feature(const_exact_div))]
+#![cfg_attr(bootstrap, feature(const_fmt_arguments_new))]
+#![cfg_attr(bootstrap, feature(const_ub_checks))]
 #![feature(array_ptr_get)]
 #![feature(asm_experimental_arch)]
-#![feature(bigint_helper_methods)]
-#![feature(bstr)]
-#![feature(bstr_internals)]
-#![feature(closure_track_caller)]
-#![feature(const_carrying_mul_add)]
+#![feature(const_align_of_val)]
+#![feature(const_align_of_val_raw)]
+#![feature(const_alloc_layout)]
+#![feature(const_black_box)]
+#![feature(const_eq_ignore_ascii_case)]
 #![feature(const_eval_select)]
+#![feature(const_heap)]
+#![feature(const_nonnull_new)]
+#![feature(const_ptr_sub_ptr)]
+#![feature(const_raw_ptr_comparison)]
+#![feature(const_size_of_val)]
+#![feature(const_size_of_val_raw)]
+#![feature(const_sockaddr_setters)]
+#![feature(const_swap)]
+#![feature(const_try)]
+#![feature(const_type_id)]
+#![feature(const_type_name)]
+#![feature(const_typed_swap)]
 #![feature(core_intrinsics)]
 #![feature(coverage_attribute)]
-#![feature(disjoint_bitor)]
+#![feature(do_not_recommend)]
 #![feature(internal_impls_macro)]
 #![feature(ip)]
 #![feature(is_ascii_octdigit)]
@@ -130,7 +144,6 @@
 #![feature(ptr_alignment_type)]
 #![feature(ptr_metadata)]
 #![feature(set_ptr_value)]
-#![feature(slice_as_array)]
 #![feature(slice_as_chunks)]
 #![feature(slice_ptr_get)]
 #![feature(str_internals)]
@@ -145,6 +158,8 @@
 //
 // Language features:
 // tidy-alphabetical-start
+#![cfg_attr(bootstrap, feature(strict_provenance))]
+#![cfg_attr(not(bootstrap), feature(strict_provenance_lints))]
 #![feature(abi_unadjusted)]
 #![feature(adt_const_params)]
 #![feature(allow_internal_unsafe)]
@@ -154,7 +169,10 @@
 #![feature(cfg_target_has_atomic)]
 #![feature(cfg_target_has_atomic_equal_alignment)]
 #![feature(cfg_ub_checks)]
+#![feature(const_for)]
+#![feature(const_is_char_boundary)]
 #![feature(const_precise_live_drops)]
+#![feature(const_str_split_at)]
 #![feature(const_trait_impl)]
 #![feature(decl_macro)]
 #![feature(deprecated_suggestion)]
@@ -191,7 +209,6 @@
 #![feature(simd_ffi)]
 #![feature(staged_api)]
 #![feature(stmt_expr_attributes)]
-#![feature(strict_provenance_lints)]
 #![feature(target_feature_11)]
 #![feature(trait_alias)]
 #![feature(transparent_unions)]
@@ -241,16 +258,13 @@ pub mod assert_matches {
 }
 
 // We don't export this through #[macro_export] for now, to avoid breakage.
+#[cfg(not(bootstrap))]
 #[unstable(feature = "autodiff", issue = "124509")]
 /// Unstable module containing the unstable `autodiff` macro.
 pub mod autodiff {
     #[unstable(feature = "autodiff", issue = "124509")]
     pub use crate::macros::builtin::autodiff;
 }
-
-#[cfg(not(bootstrap))]
-#[unstable(feature = "contracts", issue = "128044")]
-pub mod contracts;
 
 #[unstable(feature = "cfg_match", issue = "115585")]
 pub use crate::macros::cfg_match;
@@ -344,8 +358,6 @@ pub mod ascii;
 pub mod asserting;
 #[unstable(feature = "async_iterator", issue = "79024")]
 pub mod async_iter;
-#[unstable(feature = "bstr", issue = "134915")]
-pub mod bstr;
 pub mod cell;
 pub mod char;
 pub mod ffi;
@@ -356,7 +368,7 @@ pub mod net;
 pub mod option;
 pub mod panic;
 pub mod panicking;
-#[unstable(feature = "pattern_type_macro", issue = "123646")]
+#[unstable(feature = "core_pattern_types", issue = "123646")]
 pub mod pat;
 pub mod pin;
 #[unstable(feature = "random", issue = "130703")]
@@ -365,8 +377,6 @@ pub mod random;
 pub mod range;
 pub mod result;
 pub mod sync;
-#[unstable(feature = "unsafe_binders", issue = "130516")]
-pub mod unsafe_binder;
 
 pub mod fmt;
 pub mod hash;
@@ -407,8 +417,7 @@ pub mod primitive;
     unused_imports,
     unsafe_op_in_unsafe_fn,
     ambiguous_glob_reexports,
-    deprecated_in_future,
-    unreachable_pub
+    deprecated_in_future
 )]
 #[allow(rustdoc::bare_urls)]
 mod core_arch;

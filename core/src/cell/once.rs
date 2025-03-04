@@ -8,9 +8,6 @@ use crate::{fmt, mem};
 /// only immutable references can be obtained unless one has a mutable reference to the cell
 /// itself. In the same vein, the cell can only be re-initialized with such a mutable reference.
 ///
-/// A `OnceCell` can be thought of as a safe abstraction over uninitialized data that becomes
-/// initialized once written.
-///
 /// For a thread-safe version of this struct, see [`std::sync::OnceLock`].
 ///
 /// [`RefCell`]: crate::cell::RefCell
@@ -38,7 +35,7 @@ pub struct OnceCell<T> {
 }
 
 impl<T> OnceCell<T> {
-    /// Creates a new uninitialized cell.
+    /// Creates a new empty cell.
     #[inline]
     #[must_use]
     #[stable(feature = "once_cell", since = "1.70.0")]
@@ -49,7 +46,7 @@ impl<T> OnceCell<T> {
 
     /// Gets the reference to the underlying value.
     ///
-    /// Returns `None` if the cell is uninitialized.
+    /// Returns `None` if the cell is empty.
     #[inline]
     #[stable(feature = "once_cell", since = "1.70.0")]
     pub fn get(&self) -> Option<&T> {
@@ -59,19 +56,19 @@ impl<T> OnceCell<T> {
 
     /// Gets the mutable reference to the underlying value.
     ///
-    /// Returns `None` if the cell is uninitialized.
+    /// Returns `None` if the cell is empty.
     #[inline]
     #[stable(feature = "once_cell", since = "1.70.0")]
     pub fn get_mut(&mut self) -> Option<&mut T> {
         self.inner.get_mut().as_mut()
     }
 
-    /// Initializes the contents of the cell to `value`.
+    /// Sets the contents of the cell to `value`.
     ///
     /// # Errors
     ///
-    /// This method returns `Ok(())` if the cell was uninitialized
-    /// and `Err(value)` if it was already initialized.
+    /// This method returns `Ok(())` if the cell was empty and `Err(value)` if
+    /// it was full.
     ///
     /// # Examples
     ///
@@ -95,13 +92,13 @@ impl<T> OnceCell<T> {
         }
     }
 
-    /// Initializes the contents of the cell to `value` if the cell was
-    /// uninitialized, then returns a reference to it.
+    /// Sets the contents of the cell to `value` if the cell was empty, then
+    /// returns a reference to it.
     ///
     /// # Errors
     ///
-    /// This method returns `Ok(&value)` if the cell was uninitialized
-    /// and `Err((&current_value, value))` if it was already initialized.
+    /// This method returns `Ok(&value)` if the cell was empty and
+    /// `Err(&current_value, value)` if it was full.
     ///
     /// # Examples
     ///
@@ -133,12 +130,12 @@ impl<T> OnceCell<T> {
         Ok(slot.insert(value))
     }
 
-    /// Gets the contents of the cell, initializing it to `f()`
-    /// if the cell was uninitialized.
+    /// Gets the contents of the cell, initializing it with `f`
+    /// if the cell was empty.
     ///
     /// # Panics
     ///
-    /// If `f()` panics, the panic is propagated to the caller, and the cell
+    /// If `f` panics, the panic is propagated to the caller, and the cell
     /// remains uninitialized.
     ///
     /// It is an error to reentrantly initialize the cell from `f`. Doing
@@ -167,11 +164,11 @@ impl<T> OnceCell<T> {
     }
 
     /// Gets the mutable reference of the contents of the cell,
-    /// initializing it to `f()` if the cell was uninitialized.
+    /// initializing it with `f` if the cell was empty.
     ///
     /// # Panics
     ///
-    /// If `f()` panics, the panic is propagated to the caller, and the cell
+    /// If `f` panics, the panic is propagated to the caller, and the cell
     /// remains uninitialized.
     ///
     /// # Examples
@@ -202,13 +199,13 @@ impl<T> OnceCell<T> {
         }
     }
 
-    /// Gets the contents of the cell, initializing it to `f()` if
-    /// the cell was uninitialized. If the cell was uninitialized
-    /// and `f()` failed, an error is returned.
+    /// Gets the contents of the cell, initializing it with `f` if
+    /// the cell was empty. If the cell was empty and `f` failed, an
+    /// error is returned.
     ///
     /// # Panics
     ///
-    /// If `f()` panics, the panic is propagated to the caller, and the cell
+    /// If `f` panics, the panic is propagated to the caller, and the cell
     /// remains uninitialized.
     ///
     /// It is an error to reentrantly initialize the cell from `f`. Doing
@@ -242,12 +239,12 @@ impl<T> OnceCell<T> {
     }
 
     /// Gets the mutable reference of the contents of the cell, initializing
-    /// it to `f()` if the cell was uninitialized. If the cell was uninitialized
-    /// and `f()` failed, an error is returned.
+    /// it with `f` if the cell was empty. If the cell was empty and `f` failed,
+    /// an error is returned.
     ///
     /// # Panics
     ///
-    /// If `f()` panics, the panic is propagated to the caller, and the cell
+    /// If `f` panics, the panic is propagated to the caller, and the cell
     /// remains uninitialized.
     ///
     /// # Examples
@@ -259,15 +256,13 @@ impl<T> OnceCell<T> {
     ///
     /// let mut cell: OnceCell<u32> = OnceCell::new();
     ///
-    /// // Failed attempts to initialize the cell do not change its contents
+    /// // Failed initializers do not change the value
     /// assert!(cell.get_mut_or_try_init(|| "not a number!".parse()).is_err());
     /// assert!(cell.get().is_none());
     ///
     /// let value = cell.get_mut_or_try_init(|| "1234".parse());
     /// assert_eq!(value, Ok(&mut 1234));
-    ///
-    /// let Ok(value) = value else { return; };
-    /// *value += 2;
+    /// *value.unwrap() += 2;
     /// assert_eq!(cell.get(), Some(&1236))
     /// ```
     #[unstable(feature = "once_cell_get_mut", issue = "121641")]
@@ -298,7 +293,7 @@ impl<T> OnceCell<T> {
 
     /// Consumes the cell, returning the wrapped value.
     ///
-    /// Returns `None` if the cell was uninitialized.
+    /// Returns `None` if the cell was empty.
     ///
     /// # Examples
     ///
@@ -309,8 +304,8 @@ impl<T> OnceCell<T> {
     /// assert_eq!(cell.into_inner(), None);
     ///
     /// let cell = OnceCell::new();
-    /// let _ = cell.set("hello".to_owned());
-    /// assert_eq!(cell.into_inner(), Some("hello".to_owned()));
+    /// cell.set("hello".to_string()).unwrap();
+    /// assert_eq!(cell.into_inner(), Some("hello".to_string()));
     /// ```
     #[inline]
     #[stable(feature = "once_cell", since = "1.70.0")]
@@ -324,7 +319,7 @@ impl<T> OnceCell<T> {
 
     /// Takes the value out of this `OnceCell`, moving it back to an uninitialized state.
     ///
-    /// Has no effect and returns `None` if the `OnceCell` is uninitialized.
+    /// Has no effect and returns `None` if the `OnceCell` hasn't been initialized.
     ///
     /// Safety is guaranteed by requiring a mutable reference.
     ///
@@ -337,8 +332,8 @@ impl<T> OnceCell<T> {
     /// assert_eq!(cell.take(), None);
     ///
     /// let mut cell = OnceCell::new();
-    /// let _ = cell.set("hello".to_owned());
-    /// assert_eq!(cell.take(), Some("hello".to_owned()));
+    /// cell.set("hello".to_string()).unwrap();
+    /// assert_eq!(cell.take(), Some("hello".to_string()));
     /// assert_eq!(cell.get(), None);
     /// ```
     #[inline]

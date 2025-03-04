@@ -1,5 +1,3 @@
-use core::num::niche_types::Nanoseconds;
-
 use crate::time::Duration;
 use crate::{fmt, io};
 
@@ -16,6 +14,12 @@ pub(in crate::sys) const TIMESPEC_MAX_CAPPED: libc::timespec = libc::timespec {
     tv_sec: (u64::MAX / NSEC_PER_SEC) as i64,
     tv_nsec: (u64::MAX % NSEC_PER_SEC) as i64,
 };
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(transparent)]
+#[rustc_layout_scalar_valid_range_start(0)]
+#[rustc_layout_scalar_valid_range_end(999_999_999)]
+struct Nanoseconds(u32);
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SystemTime {
@@ -55,14 +59,14 @@ impl fmt::Debug for SystemTime {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("SystemTime")
             .field("tv_sec", &self.t.tv_sec)
-            .field("tv_nsec", &self.t.tv_nsec)
+            .field("tv_nsec", &self.t.tv_nsec.0)
             .finish()
     }
 }
 
 impl Timespec {
     const unsafe fn new_unchecked(tv_sec: i64, tv_nsec: i64) -> Timespec {
-        Timespec { tv_sec, tv_nsec: unsafe { Nanoseconds::new_unchecked(tv_nsec as u32) } }
+        Timespec { tv_sec, tv_nsec: unsafe { Nanoseconds(tv_nsec as u32) } }
     }
 
     pub const fn zero() -> Timespec {
@@ -92,7 +96,7 @@ impl Timespec {
         if tv_nsec >= 0 && tv_nsec < NSEC_PER_SEC as i64 {
             Ok(unsafe { Self::new_unchecked(tv_sec, tv_nsec) })
         } else {
-            Err(io::const_error!(io::ErrorKind::InvalidData, "Invalid timestamp"))
+            Err(io::const_io_error!(io::ErrorKind::InvalidData, "Invalid timestamp"))
         }
     }
 
@@ -143,15 +147,12 @@ impl Timespec {
             //
             // Ideally this code could be rearranged such that it more
             // directly expresses the lower-cost behavior we want from it.
-            let (secs, nsec) = if self.tv_nsec.as_inner() >= other.tv_nsec.as_inner() {
-                (
-                    (self.tv_sec - other.tv_sec) as u64,
-                    self.tv_nsec.as_inner() - other.tv_nsec.as_inner(),
-                )
+            let (secs, nsec) = if self.tv_nsec.0 >= other.tv_nsec.0 {
+                ((self.tv_sec - other.tv_sec) as u64, self.tv_nsec.0 - other.tv_nsec.0)
             } else {
                 (
                     (self.tv_sec - other.tv_sec - 1) as u64,
-                    self.tv_nsec.as_inner() + (NSEC_PER_SEC as u32) - other.tv_nsec.as_inner(),
+                    self.tv_nsec.0 + (NSEC_PER_SEC as u32) - other.tv_nsec.0,
                 )
             };
 
@@ -169,7 +170,7 @@ impl Timespec {
 
         // Nano calculations can't overflow because nanos are <1B which fit
         // in a u32.
-        let mut nsec = other.subsec_nanos() + self.tv_nsec.as_inner();
+        let mut nsec = other.subsec_nanos() + self.tv_nsec.0;
         if nsec >= NSEC_PER_SEC as u32 {
             nsec -= NSEC_PER_SEC as u32;
             secs = secs.checked_add(1)?;
@@ -181,7 +182,7 @@ impl Timespec {
         let mut secs = self.tv_sec.checked_sub_unsigned(other.as_secs())?;
 
         // Similar to above, nanos can't overflow.
-        let mut nsec = self.tv_nsec.as_inner() as i32 - other.subsec_nanos() as i32;
+        let mut nsec = self.tv_nsec.0 as i32 - other.subsec_nanos() as i32;
         if nsec < 0 {
             nsec += NSEC_PER_SEC as i32;
             secs = secs.checked_sub(1)?;
@@ -193,7 +194,7 @@ impl Timespec {
     pub fn to_timespec(&self) -> Option<libc::timespec> {
         Some(libc::timespec {
             tv_sec: self.tv_sec.try_into().ok()?,
-            tv_nsec: self.tv_nsec.as_inner().try_into().ok()?,
+            tv_nsec: self.tv_nsec.0.try_into().ok()?,
         })
     }
 
@@ -202,7 +203,7 @@ impl Timespec {
     #[cfg(target_os = "nto")]
     pub(in crate::sys) fn to_timespec_capped(&self) -> Option<libc::timespec> {
         // Check if timeout in nanoseconds would fit into an u64
-        if (self.tv_nsec.as_inner() as u64)
+        if (self.tv_nsec.0 as u64)
             .checked_add((self.tv_sec as u64).checked_mul(NSEC_PER_SEC)?)
             .is_none()
         {
@@ -218,7 +219,7 @@ impl Timespec {
         not(target_arch = "riscv32")
     ))]
     pub fn to_timespec64(&self) -> __timespec64 {
-        __timespec64::new(self.tv_sec, self.tv_nsec.as_inner() as _)
+        __timespec64::new(self.tv_sec, self.tv_nsec.0 as _)
     }
 }
 
@@ -292,7 +293,7 @@ impl fmt::Debug for Instant {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Instant")
             .field("tv_sec", &self.t.tv_sec)
-            .field("tv_nsec", &self.t.tv_nsec)
+            .field("tv_nsec", &self.t.tv_nsec.0)
             .finish()
     }
 }

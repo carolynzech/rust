@@ -1,5 +1,6 @@
-use crate::io::{self, PipeReader, PipeWriter};
+use crate::io;
 use crate::os::fd::{AsFd, AsRawFd, BorrowedFd, FromRawFd, IntoRawFd, OwnedFd, RawFd};
+use crate::pipe::{PipeReader, PipeWriter};
 use crate::process::Stdio;
 use crate::sys::fd::FileDesc;
 use crate::sys::pipe::anon_pipe;

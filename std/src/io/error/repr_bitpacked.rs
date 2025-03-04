@@ -103,8 +103,7 @@
 //! the time.
 
 use core::marker::PhantomData;
-use core::num::NonZeroUsize;
-use core::ptr::NonNull;
+use core::ptr::{self, NonNull};
 
 use super::{Custom, ErrorData, ErrorKind, RawOsError, SimpleMessage};
 
@@ -177,7 +176,7 @@ impl Repr {
         let utagged = ((code as usize) << 32) | TAG_OS;
         // Safety: `TAG_OS` is not zero, so the result of the `|` is not 0.
         let res = Self(
-            NonNull::without_provenance(unsafe { NonZeroUsize::new_unchecked(utagged) }),
+            unsafe { NonNull::new_unchecked(ptr::without_provenance_mut(utagged)) },
             PhantomData,
         );
         // quickly smoke-check we encoded the right thing (This generally will
@@ -194,7 +193,7 @@ impl Repr {
         let utagged = ((kind as usize) << 32) | TAG_SIMPLE;
         // Safety: `TAG_SIMPLE` is not zero, so the result of the `|` is not 0.
         let res = Self(
-            NonNull::without_provenance(unsafe { NonZeroUsize::new_unchecked(utagged) }),
+            unsafe { NonNull::new_unchecked(ptr::without_provenance_mut(utagged)) },
             PhantomData,
         );
         // quickly smoke-check we encoded the right thing (This generally will
@@ -336,7 +335,7 @@ fn kind_from_prim(ek: u32) -> Option<ErrorKind> {
         WriteZero,
         StorageFull,
         NotSeekable,
-        QuotaExceeded,
+        FilesystemQuotaExceeded,
         FileTooLarge,
         ResourceBusy,
         ExecutableFileBusy,

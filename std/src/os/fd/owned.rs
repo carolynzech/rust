@@ -11,8 +11,6 @@ use crate::sys::cvt;
 use crate::sys_common::{AsInner, FromInner, IntoInner};
 use crate::{fmt, fs, io};
 
-type ValidRawFd = core::num::niche_types::NotAllOnes<RawFd>;
-
 /// A borrowed file descriptor.
 ///
 /// This has a lifetime parameter to tie it to the lifetime of something that owns the file
@@ -34,10 +32,15 @@ type ValidRawFd = core::num::niche_types::NotAllOnes<RawFd>;
 /// instead, but this is not supported on all platforms.
 #[derive(Copy, Clone)]
 #[repr(transparent)]
+#[rustc_layout_scalar_valid_range_start(0)]
+// libstd/os/raw/mod.rs assures me that every libstd-supported platform has a
+// 32-bit c_int. Below is -2, in two's complement, but that only works out
+// because c_int is 32 bits.
+#[rustc_layout_scalar_valid_range_end(0xFF_FF_FF_FE)]
 #[rustc_nonnull_optimization_guaranteed]
 #[stable(feature = "io_safety", since = "1.63.0")]
 pub struct BorrowedFd<'fd> {
-    fd: ValidRawFd,
+    fd: RawFd,
     _phantom: PhantomData<&'fd OwnedFd>,
 }
 
@@ -53,10 +56,15 @@ pub struct BorrowedFd<'fd> {
 ///
 /// You can use [`AsFd::as_fd`] to obtain a [`BorrowedFd`].
 #[repr(transparent)]
+#[rustc_layout_scalar_valid_range_start(0)]
+// libstd/os/raw/mod.rs assures me that every libstd-supported platform has a
+// 32-bit c_int. Below is -2, in two's complement, but that only works out
+// because c_int is 32 bits.
+#[rustc_layout_scalar_valid_range_end(0xFF_FF_FF_FE)]
 #[rustc_nonnull_optimization_guaranteed]
 #[stable(feature = "io_safety", since = "1.63.0")]
 pub struct OwnedFd {
-    fd: ValidRawFd,
+    fd: RawFd,
 }
 
 impl BorrowedFd<'_> {
@@ -72,8 +80,7 @@ impl BorrowedFd<'_> {
     pub const unsafe fn borrow_raw(fd: RawFd) -> Self {
         assert!(fd != u32::MAX as RawFd);
         // SAFETY: we just asserted that the value is in the valid range and isn't `-1` (the only value bigger than `0xFF_FF_FF_FE` unsigned)
-        let fd = unsafe { ValidRawFd::new_unchecked(fd) };
-        Self { fd, _phantom: PhantomData }
+        unsafe { Self { fd, _phantom: PhantomData } }
     }
 }
 
@@ -123,7 +130,7 @@ impl BorrowedFd<'_> {
 impl AsRawFd for BorrowedFd<'_> {
     #[inline]
     fn as_raw_fd(&self) -> RawFd {
-        self.fd.as_inner()
+        self.fd
     }
 }
 
@@ -131,7 +138,7 @@ impl AsRawFd for BorrowedFd<'_> {
 impl AsRawFd for OwnedFd {
     #[inline]
     fn as_raw_fd(&self) -> RawFd {
-        self.fd.as_inner()
+        self.fd
     }
 }
 
@@ -139,7 +146,7 @@ impl AsRawFd for OwnedFd {
 impl IntoRawFd for OwnedFd {
     #[inline]
     fn into_raw_fd(self) -> RawFd {
-        ManuallyDrop::new(self).fd.as_inner()
+        ManuallyDrop::new(self).fd
     }
 }
 
@@ -157,8 +164,7 @@ impl FromRawFd for OwnedFd {
     unsafe fn from_raw_fd(fd: RawFd) -> Self {
         assert_ne!(fd, u32::MAX as RawFd);
         // SAFETY: we just asserted that the value is in the valid range and isn't `-1` (the only value bigger than `0xFF_FF_FF_FE` unsigned)
-        let fd = unsafe { ValidRawFd::new_unchecked(fd) };
-        Self { fd }
+        unsafe { Self { fd } }
     }
 }
 
@@ -181,12 +187,12 @@ impl Drop for OwnedFd {
             #[cfg(not(target_os = "hermit"))]
             {
                 #[cfg(unix)]
-                crate::sys::fs::debug_assert_fd_is_open(self.fd.as_inner());
+                crate::sys::fs::debug_assert_fd_is_open(self.fd);
 
-                let _ = libc::close(self.fd.as_inner());
+                let _ = libc::close(self.fd);
             }
             #[cfg(target_os = "hermit")]
-            let _ = hermit_abi::close(self.fd.as_inner());
+            let _ = hermit_abi::close(self.fd);
         }
     }
 }
@@ -416,14 +422,6 @@ impl<T: AsFd + ?Sized> AsFd for crate::sync::Arc<T> {
 
 #[stable(feature = "asfd_rc", since = "1.69.0")]
 impl<T: AsFd + ?Sized> AsFd for crate::rc::Rc<T> {
-    #[inline]
-    fn as_fd(&self) -> BorrowedFd<'_> {
-        (**self).as_fd()
-    }
-}
-
-#[unstable(feature = "unique_rc_arc", issue = "112566")]
-impl<T: AsFd + ?Sized> AsFd for crate::rc::UniqueRc<T> {
     #[inline]
     fn as_fd(&self) -> BorrowedFd<'_> {
         (**self).as_fd()

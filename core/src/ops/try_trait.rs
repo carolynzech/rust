@@ -338,7 +338,6 @@ pub trait FromResidual<R = <Self as Try>::Residual> {
 #[inline]
 #[track_caller] // because `Result::from_residual` has it
 #[lang = "from_yeet"]
-#[allow(unreachable_pub)] // not-exposed but still used via lang-item
 pub fn from_yeet<T, Y>(yeeted: Y) -> T
 where
     T: FromResidual<Yeet<Y>>,
@@ -384,14 +383,12 @@ impl<T> NeverShortCircuit<T> {
     /// This is useful for implementing infallible functions in terms of the `try_` ones,
     /// without accidentally capturing extra generic parameters in a closure.
     #[inline]
-    pub(crate) fn wrap_mut_1<A>(
-        mut f: impl FnMut(A) -> T,
-    ) -> impl FnMut(A) -> NeverShortCircuit<T> {
+    pub fn wrap_mut_1<A>(mut f: impl FnMut(A) -> T) -> impl FnMut(A) -> NeverShortCircuit<T> {
         move |a| NeverShortCircuit(f(a))
     }
 
     #[inline]
-    pub(crate) fn wrap_mut_2<A, B>(mut f: impl FnMut(A, B) -> T) -> impl FnMut(A, B) -> Self {
+    pub fn wrap_mut_2<A, B>(mut f: impl FnMut(A, B) -> T) -> impl FnMut(A, B) -> Self {
         move |a, b| NeverShortCircuit(f(a, b))
     }
 }

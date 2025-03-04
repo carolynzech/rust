@@ -1,9 +1,10 @@
 #![feature(anonymous_pipe)]
 
 fn main() {
-    #[cfg(all(not(miri), any(unix, windows), not(target_os = "emscripten")))]
+    #[cfg(all(not(miri), any(unix, windows)))]
     {
-        use std::io::{Read, pipe};
+        use std::io::Read;
+        use std::pipe::pipe;
         use std::{env, process};
 
         if env::var("I_AM_THE_CHILD").is_ok() {

@@ -45,7 +45,6 @@ unsafe impl Sync for Thread {}
 
 impl Thread {
     // unsafe: see thread::Builder::spawn_unchecked for safety requirements
-    #[cfg_attr(miri, track_caller)] // even without panics, this helps for Miri backtraces
     pub unsafe fn new(stack: usize, p: Box<dyn FnOnce()>) -> io::Result<Thread> {
         let p = Box::into_raw(Box::new(p));
         let mut native: libc::pthread_t = mem::zeroed();
@@ -130,32 +129,25 @@ impl Thread {
         }
     }
 
-    #[cfg(any(
-        target_os = "linux",
-        target_os = "freebsd",
-        target_os = "dragonfly",
-        target_os = "nuttx"
-    ))]
+    #[cfg(target_os = "linux")]
     pub fn set_name(name: &CStr) {
+        const TASK_COMM_LEN: usize = 16;
+
         unsafe {
-            cfg_if::cfg_if! {
-                if #[cfg(target_os = "linux")] {
-                    // Linux limits the allowed length of the name.
-                    const TASK_COMM_LEN: usize = 16;
-                    let name = truncate_cstr::<{ TASK_COMM_LEN }>(name);
-                } else {
-                    // FreeBSD, DragonFly, FreeBSD and NuttX do not enforce length limits.
-                }
-            };
-            // Available since glibc 2.12, musl 1.1.16, and uClibc 1.0.20 for Linux,
-            // FreeBSD 12.2 and 13.0, and DragonFly BSD 6.0.
+            // Available since glibc 2.12, musl 1.1.16, and uClibc 1.0.20.
+            let name = truncate_cstr::<{ TASK_COMM_LEN }>(name);
             let res = libc::pthread_setname_np(libc::pthread_self(), name.as_ptr());
             // We have no good way of propagating errors here, but in debug-builds let's check that this actually worked.
             debug_assert_eq!(res, 0);
         }
     }
 
-    #[cfg(target_os = "openbsd")]
+    #[cfg(any(
+        target_os = "freebsd",
+        target_os = "dragonfly",
+        target_os = "openbsd",
+        target_os = "nuttx"
+    ))]
     pub fn set_name(name: &CStr) {
         unsafe {
             libc::pthread_set_name_np(libc::pthread_self(), name.as_ptr());
@@ -477,7 +469,7 @@ pub fn available_parallelism() -> io::Result<NonZero<usize>> {
             unsafe {
                 use libc::_syspage_ptr;
                 if _syspage_ptr.is_null() {
-                    Err(io::const_error!(io::ErrorKind::NotFound, "No syspage available"))
+                    Err(io::const_io_error!(io::ErrorKind::NotFound, "No syspage available"))
                 } else {
                     let cpus = (*_syspage_ptr).num_cpu;
                     NonZero::new(cpus as usize)
@@ -517,7 +509,7 @@ pub fn available_parallelism() -> io::Result<NonZero<usize>> {
             }
         } else {
             // FIXME: implement on Redox, l4re
-            Err(io::const_error!(io::ErrorKind::Unsupported, "Getting the number of hardware threads is not supported on the target platform"))
+            Err(io::const_io_error!(io::ErrorKind::Unsupported, "Getting the number of hardware threads is not supported on the target platform"))
         }
     }
 }
