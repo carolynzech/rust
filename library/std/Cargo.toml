@@ -18,7 +18,11 @@ cfg-if = { version = "1.0", features = ['rustc-dep-of-std'] }
 panic_unwind = { path = "../panic_unwind", optional = true }
 panic_abort = { path = "../panic_abort" }
 core = { path = "../core", public = true }
+<<<<<<< HEAD
 compiler_builtins = { version = "=0.1.145" }
+=======
+compiler_builtins = { version = "=0.1.146" }
+>>>>>>> 98bc9a8d6d5d9e482b1f99face354f6b582b125c
 unwind = { path = "../unwind" }
 hashbrown = { version = "0.15", default-features = false, features = [
     'rustc-dep-of-std',

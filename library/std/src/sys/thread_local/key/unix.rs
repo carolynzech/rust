@@ -8,7 +8,11 @@ mod libc {
     #[allow(non_camel_case_types)]
     pub type pthread_key_t = ffi::c_uint;
 
+<<<<<<< HEAD
     extern "C" {
+=======
+    unsafe extern "C" {
+>>>>>>> 98bc9a8d6d5d9e482b1f99face354f6b582b125c
         pub fn pthread_key_create(
             key: *mut pthread_key_t,
             destructor: unsafe extern "C" fn(*mut ffi::c_void),

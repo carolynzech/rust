@@ -37,7 +37,10 @@
 #![feature(local_waker)]
 #![feature(str_as_str)]
 #![feature(strict_provenance_lints)]
+<<<<<<< HEAD
 #![feature(vec_pop_if)]
+=======
+>>>>>>> 98bc9a8d6d5d9e482b1f99face354f6b582b125c
 #![feature(vec_deque_pop_if)]
 #![feature(unique_rc_arc)]
 #![feature(macro_metavar_expr_concat)]

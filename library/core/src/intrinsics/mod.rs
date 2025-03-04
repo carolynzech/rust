@@ -4005,6 +4005,7 @@ pub const fn is_val_statically_known<T: Copy>(_arg: T) -> bool {
 #[rustc_intrinsic]
 #[rustc_intrinsic_const_stable_indirect]
 #[rustc_allow_const_fn_unstable(const_swap_nonoverlapping)] // this is anyway not called since CTFE implements the intrinsic
+<<<<<<< HEAD
 #[cfg_attr(kani, kani::modifies(x))]
 #[cfg_attr(kani, kani::modifies(y))]
 #[requires(ub_checks::can_dereference(x) && ub_checks::can_write(x))]
@@ -4012,6 +4013,8 @@ pub const fn is_val_statically_known<T: Copy>(_arg: T) -> bool {
 #[requires(x.addr() != y.addr() || core::mem::size_of::<T>() == 0)]
 #[requires(ub_checks::maybe_is_nonoverlapping(x as *const (), y as *const (), size_of::<T>(), 1))]
 #[ensures(|_| ub_checks::can_dereference(x) && ub_checks::can_dereference(y))]
+=======
+>>>>>>> 98bc9a8d6d5d9e482b1f99face354f6b582b125c
 pub const unsafe fn typed_swap_nonoverlapping<T>(x: *mut T, y: *mut T) {
     // SAFETY: The caller provided single non-overlapping items behind
     // pointers, so swapping them with `count: 1` is fine.
@@ -4920,7 +4923,7 @@ fn check_copy_untyped<T>(src: *const T, dst: *mut T, count: usize) -> bool {
 #[cfg(miri)]
 #[rustc_allow_const_fn_unstable(const_eval_select)]
 pub(crate) const fn miri_promise_symbolic_alignment(ptr: *const (), align: usize) {
-    extern "Rust" {
+    unsafe extern "Rust" {
         /// Miri-provided extern function to promise that a given pointer is properly aligned for
         /// "symbolic" alignment checks. Will fail if the pointer is not actually aligned or `align` is
         /// not a power of two. Has no effect when alignment checks are concrete (which is the default).

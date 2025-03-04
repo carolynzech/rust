@@ -50,8 +50,11 @@ impl Alignment {
     #[unstable(feature = "ptr_alignment_type", issue = "102070")]
     #[inline]
     #[must_use]
+<<<<<<< HEAD
     #[requires(mem::align_of::<T>().is_power_of_two())]
     #[ensures(|result| result.as_usize().is_power_of_two())]
+=======
+>>>>>>> 98bc9a8d6d5d9e482b1f99face354f6b582b125c
     pub const fn of<T>() -> Self {
         // This can't actually panic since type alignment is always a power of two.
         const { Alignment::new(mem::align_of::<T>()).unwrap() }

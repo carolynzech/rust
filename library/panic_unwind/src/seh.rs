@@ -135,7 +135,11 @@ mod imp {
     #[derive(Copy, Clone)]
     pub(super) struct ptr_t(u32);
 
+<<<<<<< HEAD
     extern "C" {
+=======
+    unsafe extern "C" {
+>>>>>>> 98bc9a8d6d5d9e482b1f99face354f6b582b125c
         static __ImageBase: u8;
     }
 
@@ -229,7 +233,7 @@ static mut CATCHABLE_TYPE: _CatchableType = _CatchableType {
     copyFunction: ptr_t::null(),
 };
 
-extern "C" {
+unsafe extern "C" {
     // The leading `\x01` byte here is actually a magical signal to LLVM to
     // *not* apply any other mangling like prefixing with a `_` character.
     //
@@ -343,7 +347,7 @@ pub(crate) unsafe fn panic(data: Box<dyn Any + Send>) -> u32 {
         ptr_t::new(exception_copy as *mut u8).raw(),
     );
 
-    extern "system-unwind" {
+    unsafe extern "system-unwind" {
         fn _CxxThrowException(pExceptionObject: *mut c_void, pThrowInfo: *mut u8) -> !;
     }
 
