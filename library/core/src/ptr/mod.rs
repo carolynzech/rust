@@ -396,8 +396,11 @@
 
 use crate::cmp::Ordering;
 use crate::intrinsics::const_eval_select;
+<<<<<<< HEAD
 #[cfg(kani)]
 use crate::kani;
+=======
+>>>>>>> c9aa244a589c8f7b5e52a53be14af4966ae6ec8f
 use crate::marker::FnPtr;
 use crate::mem::{self, MaybeUninit, SizedTypeProperties};
 use crate::{fmt, hash, intrinsics, ub_checks};

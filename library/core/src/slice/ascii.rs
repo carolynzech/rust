@@ -5,8 +5,11 @@ use core::ascii::EscapeDefault;
 use crate::fmt::{self, Write};
 #[cfg(not(all(target_arch = "x86_64", target_feature = "sse2")))]
 use crate::intrinsics::const_eval_select;
+<<<<<<< HEAD
 #[cfg(kani)]
 use crate::kani;
+=======
+>>>>>>> c9aa244a589c8f7b5e52a53be14af4966ae6ec8f
 use crate::{ascii, iter, ops};
 
 #[cfg(not(test))]
@@ -507,6 +510,7 @@ const fn is_ascii(bytes: &[u8]) -> bool {
 
     is_ascii
 }
+<<<<<<< HEAD
 
 #[cfg(kani)]
 #[unstable(feature = "kani", issue = "none")]
@@ -532,3 +536,5 @@ pub mod verify {
         }
     }
 }
+=======
+>>>>>>> c9aa244a589c8f7b5e52a53be14af4966ae6ec8f

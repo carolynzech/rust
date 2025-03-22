@@ -92,7 +92,10 @@
 //
 // Library features:
 // tidy-alphabetical-start
+<<<<<<< HEAD
 #![cfg_attr(kani, feature(kani))]
+=======
+>>>>>>> c9aa244a589c8f7b5e52a53be14af4966ae6ec8f
 #![cfg_attr(test, feature(str_as_str))]
 #![feature(alloc_layout_extra)]
 #![feature(allocator_api)]

@@ -11,7 +11,10 @@ edition = "2021"
 [dependencies]
 core = { path = "../core" }
 compiler_builtins = { version = "=0.1.145", features = ['rustc-dep-of-std'] }
+<<<<<<< HEAD
 safety = { path = "../contracts/safety" }
+=======
+>>>>>>> c9aa244a589c8f7b5e52a53be14af4966ae6ec8f
 
 [dev-dependencies]
 rand = { version = "0.8.5", default-features = false, features = ["alloc"] }
