@@ -2238,7 +2238,10 @@ macro_rules! uint_impl {
         #[must_use = "this returns the result of the operation, \
                       without modifying the original"]
         #[inline(always)]
+<<<<<<< HEAD
         #[ensures(|result| *result == self << (rhs & (Self::BITS - 1)))]
+=======
+>>>>>>> c9aa244a589c8f7b5e52a53be14af4966ae6ec8f
         pub const fn wrapping_shl(self, rhs: u32) -> Self {
             // SAFETY: the masking by the bitsize of the type ensures that we do not shift
             // out of bounds
@@ -2271,7 +2274,10 @@ macro_rules! uint_impl {
         #[must_use = "this returns the result of the operation, \
                       without modifying the original"]
         #[inline(always)]
+<<<<<<< HEAD
         #[ensures(|result| *result == self >> (rhs & (Self::BITS - 1)))]
+=======
+>>>>>>> c9aa244a589c8f7b5e52a53be14af4966ae6ec8f
         pub const fn wrapping_shr(self, rhs: u32) -> Self {
             // SAFETY: the masking by the bitsize of the type ensures that we do not shift
             // out of bounds
