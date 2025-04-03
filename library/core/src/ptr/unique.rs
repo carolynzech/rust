@@ -98,8 +98,11 @@ impl<T: ?Sized> Unique<T> {
 
     /// Creates a new `Unique` if `ptr` is non-null.
     #[inline]
+<<<<<<< HEAD
     #[ensures(|result| result.is_none() == ptr.is_null())]
     #[ensures(|result| result.is_none() || result.unwrap().as_ptr() == ptr)]
+=======
+>>>>>>> 612691ebce00a8c0e09a39c625e24c61a9a171fc
     pub const fn new(ptr: *mut T) -> Option<Self> {
         if let Some(pointer) = NonNull::new(ptr) {
             Some(Unique { pointer, _marker: PhantomData })
