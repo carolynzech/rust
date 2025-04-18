@@ -309,6 +309,9 @@ main() {
         ./std-analysis.sh $build_dir
         pip install -r requirements.txt
         echo "Computing Kani-specific metrics..."
+        ./kani_std_analysis.py --crate alloc \
+          --kani-list-file $current_dir/kani-list.json \
+          --metrics-file metrics-data-alloc.json
         ./kani_std_analysis.py --crate core \
           --kani-list-file $current_dir/kani-list.json \
           --metrics-file metrics-data-core.json
