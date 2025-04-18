@@ -17,6 +17,7 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
       with:
+        ref: alloc-metrics
         submodules: true
     
     # The Kani metrics collection uses a Python script (kani_std_analysis.py), so make sure Python is installed
