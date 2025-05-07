@@ -8,6 +8,8 @@ use crate::kani;
 use crate::mem::{self, SizedTypeProperties};
 use crate::slice::{self, SliceIndex};
 
+// I am a change in the library/ folder
+
 impl<T: ?Sized> *mut T {
     /// Returns `true` if the pointer is null.
     ///
