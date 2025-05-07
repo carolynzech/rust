@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# I am a change outside the library/ folder
+
 # Script to find files with specific annotations and print contracts
 # containing those annotations up to a line with "fn"
 PATTERN_STRING='^\s*#\[((safety::)?(requires|ensures)\(|cfg_attr\((kani|not\(kani\)))'
