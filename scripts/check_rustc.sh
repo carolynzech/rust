@@ -115,7 +115,7 @@ fi
 # Run tests
 cd "$TMP_RUST_DIR"
 echo "Running tests..."
-./x test --stage 0 library/std
+./x test --stage 1 library/std
 
 echo "Tests completed."
 
