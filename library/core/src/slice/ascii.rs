@@ -487,7 +487,7 @@ const fn is_ascii(bytes: &[u8]) -> bool {
         // ASCII bytes are less than 128 (0x80), so their most significant
         // bit is unset.
         let mut count = 0;
-        #[safety::loop_invariant(i <= chunk_end)]
+        #[safety::loop_invariant(i <= chunk_end && prev(count as usize) <= count as usize)]
         while i < chunk_end {
             count += bytes[i].is_ascii() as u8;
             i += 1;
