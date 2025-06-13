@@ -114,6 +114,7 @@ fi
 
 # Run tests
 cd "$TMP_RUST_DIR"
+cargo clean
 echo "Running tests..."
 ./x test --stage 1 library/std
 
